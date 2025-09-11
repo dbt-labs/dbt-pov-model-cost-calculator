@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: dbt_model_executions
+    description: "Incrementally built table tracking every model execution with essential metadata"
+    columns:
+      - name: model_name
+        description: "Name of the dbt model that was executed"
+        tests:
+          - not_null
+      - name: model_package
+        description: "Package name where the model is defined"
+      - name: model_type
+        description: "Materialization type of the model (table, view, incremental, etc.)"
+      - name: status
+        description: "Execution status of the model (success, error, skipped)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["success", "error", "skipped"]
+      - name: execution_time
+        description: "Time taken to execute the model in seconds"
+        tests:
+          - not_null
+      - name: invocation_id
+        description: "Unique identifier for the dbt run invocation"
+        tests:
+          - not_null
+      - name: query_id
+        description: "Unique identifier for the executed query (adapter-specific)"
+      - name: insert_timestamp
+        description: "Timestamp when this record was inserted into the tracking table"
+        tests:
+          - not_null
+      - name: dbt_cloud_run_id
+        description: "dbt Cloud run ID (if running in dbt Cloud)"
+      - name: dbt_cloud_job_id
+        description: "dbt Cloud job ID (if running in dbt Cloud)"
+      - name: dbt_cloud_project_id
+        description: "dbt Cloud project ID (if running in dbt Cloud)"
+      - name: dbt_version
+        description: "Version of dbt used for the execution"
+        tests:
+          - not_null
+      - name: run_started_at
+        description: "Timestamp when the dbt run started"
+        tests:
+          - not_null
