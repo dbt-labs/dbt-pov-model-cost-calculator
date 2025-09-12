@@ -29,9 +29,16 @@ clean-targets: # directories to be removed by `dbt clean`
 models:
   dbt_artifact_now:
 
+# Configure the on-run-start hook to create the tracking table
+on-run-start:
+  - "{{ create_artifact_table() }}"
+
 # Configure the on-run-end hook to log model executions
 on-run-end:
   - "{{ log_model_executions() }}"
+
+# Configure query comments to include comprehensive metadata
+query-comment: "{{ dbt_artifact_now.query_comment(node) }}"
 
 # Variables for the plugin
 vars:

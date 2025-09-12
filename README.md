@@ -21,6 +21,7 @@ For each model execution, the plugin captures:
 - **Timestamps**: Record insertion time and run start time
 - **dbt Cloud Data**: Run ID, job ID, project ID (when available)
 - **Run Context**: Invocation ID and query ID (adapter-specific)
+- **Query Comments**: Comprehensive JSON metadata attached to all SQL queries
 
 ## Installation
 
@@ -38,6 +39,9 @@ For each model execution, the plugin captures:
    # Add to your existing dbt_project.yml
    on-run-end:
      - "{{ log_model_executions() }}"
+   
+   # Optional: Add comprehensive query comments
+   query-comment: "{{ query_comment(node) }}"
    
    vars:
      artifact_schema: "{{ target.schema }}"
@@ -71,6 +75,39 @@ The plugin automatically detects and uses these dbt Cloud environment variables 
 - `DBT_CLOUD_RUN_ID`: Unique identifier for the dbt Cloud run
 - `DBT_CLOUD_JOB_ID`: Identifier for the dbt Cloud job
 - `DBT_CLOUD_PROJECT_ID`: Identifier for the dbt Cloud project
+
+### Query Comments
+
+The plugin includes a comprehensive query comment system that attaches JSON metadata to all SQL queries executed by dbt. This follows [dbt's best practices for query comments](https://docs.getdbt.com/reference/project-configs/query-comment#advanced-use-a-macro-to-generate-a-comment).
+
+**Query Comment Features:**
+- **Model Identification**: Includes node ID, name, package, and file path
+- **Execution Context**: dbt version, profile, target, and invocation ID
+- **dbt Cloud Integration**: Run ID, job ID, and project ID when available
+- **Database Relations**: Target database, schema, and identifier information
+
+**Example Query Comment:**
+```json
+{
+  "app": "dbt_artifact_now",
+  "dbt_version": "1.6.0",
+  "profile_name": "my_project",
+  "target_name": "dev",
+  "invocation_id": "abc123",
+  "dbt_cloud_job_id": "12345",
+  "dbt_cloud_run_id": "67890",
+  "node_id": "model.my_project.my_model",
+  "node_name": "my_model",
+  "resource_type": "model",
+  "package_name": "my_project",
+  "file": "models/my_model.sql",
+  "relation": {
+    "database": "my_database",
+    "schema": "my_schema", 
+    "identifier": "my_model"
+  }
+}
+```
 
 ## Table Schema
 

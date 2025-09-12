@@ -3,29 +3,6 @@
     {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
     {% set tracking_schema = var('artifact_schema', target.schema) %}
     {% set tracking_database = target.database %}
-    {% set datatypes = get_adapter_datatypes() %}
-    
-
-    {% set create_table_sql %}
-      create table if not exists {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} (
-        model_name {{ datatypes.varchar }},
-        model_package {{ datatypes.varchar }},
-        model_type {{ datatypes.varchar }},
-        status {{ datatypes.varchar }},
-        execution_time {{ datatypes.float }},
-        invocation_id {{ datatypes.varchar }},
-        query_id {{ datatypes.varchar }},
-        insert_timestamp {{ datatypes.timestamp }},
-        dbt_cloud_run_id {{ datatypes.varchar }},
-        dbt_cloud_job_id {{ datatypes.varchar }},
-        dbt_cloud_project_id {{ datatypes.varchar }},
-        dbt_version {{ datatypes.varchar }},
-        run_started_at {{ datatypes.timestamp }}
-      )
-    {% endset %}
-    
-    {{ log("Creating tracking table if it doesn't exist: " ~ tracking_database ~ "." ~ tracking_schema ~ "." ~ tracking_table, info=true) }}
-    {% do run_query(create_table_sql) %}
     
     {% set model_results = [] %}
     {% for result in results %}
@@ -70,6 +47,7 @@
             run_started_at
           ) values
           {% for result in batch_results %}
+
             (
               '{{ result.node.name }}',
               '{{ result.node.package_name }}',
