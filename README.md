@@ -1,4 +1,4 @@
-# dbt Artifact Now
+# dbt Model Build Logger
 
 A dbt plugin that maintains an incrementally built table in your target database containing a record for every model execution. This plugin leverages the `on-run-end` hook to automatically track model executions with comprehensive metadata.
 
@@ -40,8 +40,8 @@ For each model execution, the plugin captures:
    on-run-end:
      - "{{ log_model_executions() }}"
    
-   # Optional: Add comprehensive query comments
-   query-comment: "{{ query_comment(node) }}"
+  # Optional: Add comprehensive query comments
+  query-comment: "{{ dbt_model_build_logger.query_comment(node) }}"
    
    vars:
      artifact_schema: "{{ target.schema }}"
@@ -66,6 +66,9 @@ vars:
   
   # Table name for tracking model executions
   artifact_table: "dbt_model_executions"
+  
+  # Batch size for inserting model execution records (default: 500)
+  batch_size: 500
 ```
 
 ### dbt Cloud Environment Variables
@@ -75,6 +78,26 @@ The plugin automatically detects and uses these dbt Cloud environment variables 
 - `DBT_CLOUD_RUN_ID`: Unique identifier for the dbt Cloud run
 - `DBT_CLOUD_JOB_ID`: Identifier for the dbt Cloud job
 - `DBT_CLOUD_PROJECT_ID`: Identifier for the dbt Cloud project
+
+### Batch Size Configuration
+
+The `batch_size` variable controls how many model execution records are inserted in each batch. This can be adjusted based on your needs:
+
+- **Smaller batches (100-250)**: Better for environments with memory constraints or slower networks
+- **Default (500)**: Good balance of performance and memory usage for most use cases
+- **Larger batches (1000+)**: Better performance for large dbt projects with many models
+
+**Example configurations:**
+```yaml
+# For large projects with 1000+ models
+batch_size: 1000
+
+# For memory-constrained environments
+batch_size: 100
+
+# For maximum performance (use with caution)
+batch_size: 2000
+```
 
 ### Query Comments
 
@@ -89,18 +112,11 @@ The plugin includes a comprehensive query comment system that attaches JSON meta
 **Example Query Comment:**
 ```json
 {
-  "app": "dbt_artifact_now",
-  "dbt_version": "1.6.0",
-  "profile_name": "my_project",
-  "target_name": "dev",
   "invocation_id": "abc123",
   "dbt_cloud_job_id": "12345",
-  "dbt_cloud_run_id": "67890",
   "node_id": "model.my_project.my_model",
   "node_name": "my_model",
-  "resource_type": "model",
   "package_name": "my_project",
-  "file": "models/my_model.sql",
   "relation": {
     "database": "my_database",
     "schema": "my_schema", 

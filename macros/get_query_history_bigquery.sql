@@ -2,7 +2,11 @@
   {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
   {% set tracking_schema = var('artifact_schema', target.schema) %}
   {% set tracking_database = target.database %}
-  
+  {%- if target.location -%}
+    {% set location = target.location  %}
+  {%- else -%}
+    {% set location = 'us' %}
+  {%- endif -%}
   select 
     jobs.job_id as query_id,
     dbt.model_name,
@@ -28,7 +32,7 @@
     end as estimated_cost_usd
 
   from {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} as dbt
-  left join `{{ target.project }}.region-{{ target.location }}.INFORMATION_SCHEMA.JOBS` as jobs
+  left join `{{ target.project }}.region-{{ location }}.INFORMATION_SCHEMA.JOBS` as jobs
     on jobs.job_type = 'QUERY'
     and jobs.query like '%' || dbt.model_name || '%'
     and jobs.query like '%"dbt_cloud_job_id": "' || dbt.dbt_cloud_job_id || '",%'
@@ -39,4 +43,5 @@
     and jobs.creation_time >= timestamp(dbt.run_started_at)
     and jobs.creation_time <= timestamp_add(timestamp(dbt.run_started_at), interval cast(dbt.execution_time as int64) second)
     and jobs.destination_table.table_id != '{{ tracking_table }}'
+    and jobs.project_id = '{{ tracking_database }}'
 {% endmacro %}

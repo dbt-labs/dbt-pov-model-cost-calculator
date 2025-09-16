@@ -6,12 +6,12 @@
     
     {% set model_results = [] %}
     {% for result in results %}
-      {% if result.node.resource_type == 'model' %}
+      {% if result.node.resource_type == 'model' and result.node.package_name != 'dbt_model_build_logger' %}
         {% do model_results.append(result) %}
       {% endif %}
     {% endfor %}
     
-    {% set batch_size = 500 %}
+    {% set batch_size = var('batch_size', 500) %}
     {% set total_models = model_results|length %}
     {% set num_batches = (total_models / batch_size)|round(0, 'ceil')|int %}
     
@@ -33,6 +33,7 @@
         {% set batch_insert_sql %}
           insert into {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} (
             model_name,
+            relation_name,
             model_package,
             model_type,
             status,
@@ -50,6 +51,7 @@
 
             (
               '{{ result.node.name }}',
+              '{{ result.relation_name}}',
               '{{ result.node.package_name }}',
               '{{ result.node.config.materialized }}',
               '{{ result.status }}',

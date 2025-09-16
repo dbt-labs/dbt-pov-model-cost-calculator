@@ -134,3 +134,4 @@ dbt_packages/
 logs/
 profiles.yml
 .env
+dbt_internal_packages/

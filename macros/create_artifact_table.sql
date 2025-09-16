@@ -8,6 +8,7 @@
     {% set create_table_sql %}
       create table if not exists {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} (
         model_name {{ datatypes.varchar }},
+        relation_name {{ datatypes.varchar }},
         model_package {{ datatypes.varchar }},
         model_type {{ datatypes.varchar }},
         status {{ datatypes.varchar }},
@@ -26,5 +27,7 @@
     {{ log("Creating artifact tracking table: " ~ tracking_database ~ "." ~ tracking_schema ~ "." ~ tracking_table, info=true) }}
     {% do run_query(create_table_sql) %}
     {{ log("Successfully created artifact tracking table", info=true) }}
+  {% else %}
+    select 1
   {% endif %}
 {% endmacro %}

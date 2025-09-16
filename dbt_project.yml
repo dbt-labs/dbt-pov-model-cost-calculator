@@ -1,9 +1,9 @@
-name: "dbt_artifact_now"
+name: "dbt_model_build_logger"
 version: "0.1.0"
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: "dbt_artifact_now"
+profile: "dbt_model_build_logger"
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
@@ -27,7 +27,7 @@ clean-targets: # directories to be removed by `dbt clean`
 # directory as views. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 models:
-  dbt_artifact_now:
+  dbt_model_build_logger:
 
 # Configure the on-run-start hook to create the tracking table
 on-run-start:
@@ -38,7 +38,7 @@ on-run-end:
   - "{{ log_model_executions() }}"
 
 # Configure query comments to include comprehensive metadata
-query-comment: "{{ dbt_artifact_now.query_comment(node) }}"
+query-comment: "{{ dbt_model_build_logger.query_comment(node) }}"
 
 # Variables for the plugin
 vars:
@@ -46,3 +46,5 @@ vars:
   artifact_schema: "{{ target.schema }}"
   # Table name for tracking model executions
   artifact_table: "dbt_model_executions"
+  # Batch size for inserting model execution records (default: 500)
+  batch_size: 500
