@@ -31,7 +31,7 @@
         {% set run_started_at = run_started_at %}
         
         {% set batch_insert_sql %}
-          insert into {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} (
+          insert into {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} (
             model_name,
             relation_name,
             model_package,

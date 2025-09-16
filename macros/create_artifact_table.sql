@@ -6,7 +6,7 @@
     {% set datatypes = get_adapter_datatypes() %}
     
     {% set create_table_sql %}
-      create table if not exists {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} (
+      create table if not exists {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} (
         model_name {{ datatypes.varchar }},
         relation_name {{ datatypes.varchar }},
         model_package {{ datatypes.varchar }},

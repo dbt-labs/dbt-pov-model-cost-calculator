@@ -69,6 +69,9 @@ vars:
   
   # Batch size for inserting model execution records (default: 500)
   batch_size: 500
+  
+  # Start date for query monitoring (default: 30 days ago)
+  model_monitor_start_date: "2024-01-01"
 ```
 
 ### dbt Cloud Environment Variables
@@ -97,6 +100,27 @@ batch_size: 100
 
 # For maximum performance (use with caution)
 batch_size: 2000
+```
+
+### Query Monitoring Time Range
+
+The `model_monitor_start_date` variable controls how far back to look for query history data. This helps manage performance and data volume:
+
+- **Default**: 30 days ago (automatically calculated)
+- **Custom Date**: Set to a specific date like `"2024-01-01"`
+- **Performance**: Shorter time ranges improve query performance
+- **Data Volume**: Longer time ranges provide more historical context
+
+**Example configurations:**
+```yaml
+# Monitor queries from the last 7 days
+model_monitor_start_date: "{{ (modules.datetime.datetime.now() - modules.datetime.timedelta(days=7)).strftime('%Y-%m-%d') }}"
+
+# Monitor queries from a specific date
+model_monitor_start_date: "2024-01-01"
+
+# Monitor queries from the last 90 days
+model_monitor_start_date: "{{ (modules.datetime.datetime.now() - modules.datetime.timedelta(days=90)).strftime('%Y-%m-%d') }}"
 ```
 
 ### Query Comments
@@ -154,9 +178,9 @@ select
   model_name,
   status,
   execution_time,
-  model_execution_timestamp
+  insert_timestamp
 from {{ var('artifact_table', 'dbt_model_executions') }}
-order by model_execution_timestamp desc
+order by insert_timestamp desc
 limit 10;
 ```
 
@@ -166,11 +190,11 @@ limit 10;
 select 
   model_name,
   status,
-  model_execution_timestamp,
+  insert_timestamp,
   dbt_cloud_run_id
 from {{ var('artifact_table', 'dbt_model_executions') }}
 where status = 'error'
-order by model_execution_timestamp desc;
+order by insert_timestamp desc;
 ```
 
 ### Performance Analysis
@@ -185,6 +209,38 @@ from {{ var('artifact_table', 'dbt_model_executions') }}
 where status = 'success'
 group by model_name
 order by avg_execution_time desc;
+```
+
+### Query History and Cost Analysis
+
+The plugin automatically creates adapter-specific models for query history analysis:
+
+- **BigQuery**: `model_queries_bigquery` - Includes bytes billed, slot usage, and cost estimates
+- **Databricks**: `model_queries_databricks` - Includes scan size, execution time, and cost estimates  
+- **Snowflake**: `model_queries_snowflake` - Includes credits used, warehouse info, and attribution data
+
+**Example - BigQuery Cost Analysis:**
+```sql
+select 
+  model_name,
+  sum(gb_billed) as total_gb_billed,
+  sum(estimated_cost_usd) as total_cost_usd,
+  count(*) as query_count
+from model_queries_bigquery
+group by model_name
+order by total_cost_usd desc;
+```
+
+**Example - Snowflake Credit Usage:**
+```sql
+select 
+  model_name,
+  sum(credits_attributed_compute) as total_compute_credits,
+  sum(credits_used_query_acceleration) as total_acceleration_credits,
+  warehouse_name
+from model_queries_snowflake
+group by model_name, warehouse_name
+order by total_compute_credits desc;
 ```
 
 ## How It Works
