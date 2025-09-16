@@ -49,6 +49,6 @@ where dbt.dbt_cloud_job_id is not null
   and dbt.dbt_cloud_job_id != 'none'
   and dbt.model_name != 'model_queries'
   and dbt.status = 'success'
-  and jobs.project = '{{ tracking_database }}'
+  and jobs.project_id = '{{ tracking_database }}'
   and jobs.destination_table.table_id != '{{ tracking_table }}'
   and jobs.creation_time >= timestamp('{{ monitor_start_date }}')
