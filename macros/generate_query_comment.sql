@@ -1,9 +1,11 @@
 {% macro query_comment(node) %}
   {# Generate a comprehensive query comment following dbt best practices #}
   {%- set comment_dict = {} -%}
-  {%- do comment_dict.update(
-      invocation_id=invocation_id
-  ) -%}
+  {%- if invocation_id is defined -%}
+    {%- do comment_dict.update(
+        invocation_id=invocation_id
+    ) -%}
+  {%- endif -%}
   
   {# Add dbt Cloud identifiers if available #}
   {%- set dbt_cloud_job_id = env_var('DBT_CLOUD_JOB_ID', 'fusion') -%}
