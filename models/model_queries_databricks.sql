@@ -112,6 +112,7 @@ select
   dbt.execution_time as dbt_execution_time,
   dbt.status,
   dbt.invocation_id,
+  dbt.dbt_version,
   
   -- Query information
   qwc.statement_id as query_id,

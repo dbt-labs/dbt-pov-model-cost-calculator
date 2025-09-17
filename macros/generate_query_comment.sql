@@ -49,7 +49,7 @@
   {%- endif -%}
   
   {# Add invocation ID #}
-  {%- if invocation_id -%}
+  {%- if invocation_id is defined -%}
     {%- do comment_parts.append('invocation_id=' ~ invocation_id) -%}
   {%- endif -%}
   

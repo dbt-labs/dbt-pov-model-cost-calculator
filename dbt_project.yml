@@ -26,8 +26,8 @@ clean-targets: # directories to be removed by `dbt clean`
 # In this example config, we tell dbt to build all models in the example/
 # directory as views. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro
-models:
-  +dbt_model_build_logger:
+# models:
+  # +dbt_model_build_logger:
 # Configure the on-run-start hook to create the tracking table
 on-run-start:
   - "{{ create_artifact_table() }}"
