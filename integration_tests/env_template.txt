@@ -1,0 +1,119 @@
+# =============================================================================
+# dbt_model_build_reporter Integration Tests Environment Variables
+# =============================================================================
+# Copy this file to .env and fill in your actual values
+# DO NOT commit the .env file to version control
+
+# =============================================================================
+# SNOWFLAKE CONFIGURATION
+# =============================================================================
+# Your Snowflake account identifier (e.g., abc12345.us-east-1)
+SNOWFLAKE_ACCOUNT=your_snowflake_account
+
+# Username for Snowflake connection
+SNOWFLAKE_USER=your_snowflake_username
+
+# Password for Snowflake connection (use DBT_ENV_SECRET_ prefix for security)
+DBT_ENV_SECRET_SNOWFLAKE_PASSWORD=your_snowflake_password
+
+# Role to use (e.g., ACCOUNTADMIN, SYSADMIN, DBT_ROLE)
+SNOWFLAKE_ROLE=your_snowflake_role
+
+# Database name for testing
+SNOWFLAKE_DATABASE=dbt_model_build_reporter_test
+
+# Warehouse name for testing (use X-Small for cost efficiency)
+SNOWFLAKE_WAREHOUSE=COMPUTE_WH
+
+# Schema name for testing
+SNOWFLAKE_SCHEMA=test_schema
+
+# =============================================================================
+# DATABRICKS CONFIGURATION
+# =============================================================================
+# Your Databricks workspace URL (e.g., https://your-workspace.cloud.databricks.com)
+DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
+
+# HTTP path for SQL warehouse (e.g., /sql/1.0/warehouses/abc123def456)
+DATABRICKS_HTTP_PATH=/sql/1.0/warehouses/your_warehouse_id
+
+# Personal access token (use DBT_ENV_SECRET_ prefix for security)
+DBT_ENV_SECRET_DATABRICKS_TOKEN=your_databricks_token
+
+# Schema name for testing
+DATABRICKS_SCHEMA=test_schema
+
+# =============================================================================
+# BIGQUERY CONFIGURATION
+# =============================================================================
+# Your GCP project ID
+BIGQUERY_PROJECT=your_gcp_project_id
+
+# Dataset name for testing
+BIGQUERY_DATASET=dbt_model_build_reporter_test
+
+# Service account key file fields (extract from your JSON key file)
+# You can get these by:
+# 1. Creating a service account in Google Cloud Console
+# 2. Downloading the JSON key file
+# 3. Extracting each field from the JSON and setting them as environment variables
+
+# Service account type (usually "service_account")
+BIGQUERY_KEYFILE_TYPE=service_account
+
+# Private key ID from your service account JSON
+DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID=your_private_key_id
+
+# Private key from your service account JSON (keep the \n characters for line breaks)
+DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_CONTENT_HERE\n-----END PRIVATE KEY-----\n"
+
+# Client email from your service account JSON
+BIGQUERY_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+
+# Client ID from your service account JSON
+BIGQUERY_CLIENT_ID=your_client_id
+
+# Client X509 cert URL from your service account JSON
+BIGQUERY_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/your-service-account%40your-project.iam.gserviceaccount.com
+
+# Optional: Override default auth/token URIs (usually not needed)
+# BIGQUERY_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+# BIGQUERY_TOKEN_URI=https://oauth2.googleapis.com/token
+# BIGQUERY_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
+
+# Location/region (optional, defaults to 'US')
+BIGQUERY_LOCATION=US
+
+# =============================================================================
+# OPTIONAL CONFIGURATION
+# =============================================================================
+# dbt Cloud Job ID for testing (optional)
+DBT_CLOUD_JOB_ID=your_dbt_cloud_job_id
+
+# dbt Cloud Run ID for testing (optional)
+DBT_CLOUD_RUN_ID=your_dbt_cloud_run_id
+
+# dbt Cloud Project ID for testing (optional)
+DBT_CLOUD_PROJECT_ID=your_dbt_cloud_project_id
+
+# =============================================================================
+# TESTING CONFIGURATION
+# =============================================================================
+# Test-specific variables (these are used by the integration tests)
+TEST_BATCH_SIZE=100
+TEST_MONITOR_START_DATE=2024-01-01
+
+# =============================================================================
+# NOTES
+# =============================================================================
+# 1. Replace all "your_*" placeholders with your actual values
+# 2. Use DBT_ENV_SECRET_ prefix for sensitive information (passwords, tokens, keys)
+# 3. For BigQuery, extract individual fields from your service account JSON key file
+# 4. Make sure your test user has the necessary permissions:
+#    - CREATE TABLE, CREATE VIEW, DROP permissions
+#    - Access to system tables (for query monitoring)
+# 5. Use small/cheap resources for testing to minimize costs:
+#    - Snowflake: X-Small warehouse
+#    - Databricks: Small SQL warehouse
+#    - BigQuery: Standard pricing tier
+# 6. Never commit this file with real credentials to version control

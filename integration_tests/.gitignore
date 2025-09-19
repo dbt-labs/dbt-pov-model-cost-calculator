@@ -1,0 +1,22 @@
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+test_*.sql
+temp_*.sql

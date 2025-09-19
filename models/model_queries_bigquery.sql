@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_model_build_logger.is_adapter_type('bigquery'),
+    enabled=dbt_model_build_reporter.is_adapter_type('bigquery'),
     materialized='view'
 ) }}
 
@@ -7,11 +7,7 @@
 {% set tracking_schema = var('artifact_schema', target.schema) %}
 {% set tracking_database = target.database %}
 {% set monitor_start_date = var('model_monitor_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d')) %}
-{% if target.compute_region %}
-    {% set tracking_region = target.compute_region %}
-{% else %}
-    {% set tracking_region = 'us' %}
-{% endif %}
+{% set bigquery_jobs_table = var('bigquery_jobs_table') %}
 
 with jobs_with_metadata as (
   select 
@@ -35,7 +31,7 @@ with jobs_with_metadata as (
       regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
       '$.invocation_id'
     ) as extracted_invocation_id
-  from `{{ target.project }}.region-{{ tracking_region }}.INFORMATION_SCHEMA.JOBS` as jobs
+  from `{{ bigquery_jobs_table }}` as jobs
   where jobs.job_type = 'QUERY'
     and jobs.creation_time >= timestamp('{{ monitor_start_date }}')
     and jobs.destination_table.table_id != '{{ tracking_table }}'

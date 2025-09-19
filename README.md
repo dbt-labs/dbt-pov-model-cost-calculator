@@ -1,4 +1,4 @@
-# dbt Model Build Logger
+# dbt Model Build Reporter
 
 A dbt plugin that maintains an incrementally built table in your target database containing a record for every model execution. This plugin leverages the `on-run-end` hook to automatically track model executions with comprehensive metadata.
 
@@ -38,10 +38,10 @@ For each model execution, the plugin captures:
    ```yaml
    # Add to your existing dbt_project.yml
    on-run-end:
-     - "{{ log_model_executions() }}"
+     - "{{ record_dbt_project_models() }}"
    
   # Optional: Add comprehensive query comments
-  query-comment: "{{ dbt_model_build_logger.query_comment(node) }}"
+  query-comment: "{{ dbt_model_build_reporter.query_comment(node) }}"
    
    vars:
      artifact_schema: "{{ target.schema }}"
@@ -121,6 +121,55 @@ model_monitor_start_date: "2024-01-01"
 
 # Monitor queries from the last 90 days
 model_monitor_start_date: "{{ (modules.datetime.datetime.now() - modules.datetime.timedelta(days=90)).strftime('%Y-%m-%d') }}"
+```
+
+### System Table Overrides
+
+The plugin allows you to override the default system tables used for query monitoring. This is useful for:
+
+- **Custom Environments**: Using different system tables in dev/staging/prod
+- **Alternative Data Sources**: Pointing to custom tables with similar schemas
+- **Testing**: Using mock or test system tables
+
+**Available Variables:**
+
+```yaml
+vars:
+  # BigQuery system table overrides
+  bigquery_jobs_table: "my_project.region-us.INFORMATION_SCHEMA.JOBS"
+  
+  # Databricks system table overrides
+  databricks_query_history_table: "system.query.history"
+  databricks_billing_usage_table: "system.billing.usage"
+  databricks_billing_prices_table: "system.billing.list_prices"
+  
+  # Snowflake system table overrides
+  snowflake_query_history_table: "snowflake.account_usage.query_history"
+  snowflake_query_attribution_table: "snowflake.account_usage.query_attribution_history"
+```
+
+**Usage Examples:**
+
+```bash
+# Override BigQuery jobs table
+dbt run --vars 'bigquery_jobs_table: "my_project.region-eu.INFORMATION_SCHEMA.JOBS"'
+
+# Override multiple Databricks tables
+dbt run --vars 'databricks_query_history_table: "custom.query_history" databricks_billing_usage_table: "custom.billing_usage"'
+
+# Use environment variables for different environments
+dbt run --vars 'snowflake_query_history_table: "{{ env_var("SNOWFLAKE_QUERY_HISTORY_TABLE", "snowflake.account_usage.query_history") }}"'
+```
+
+**Environment-Specific Configuration:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # Use environment variables with fallbacks
+  bigquery_jobs_table: "{{ env_var('BIGQUERY_JOBS_TABLE', target.project ~ '.region-' ~ (target.compute_region | default('us')) ~ '.INFORMATION_SCHEMA.JOBS') }}"
+  databricks_query_history_table: "{{ env_var('DATABRICKS_QUERY_HISTORY_TABLE', 'system.query.history') }}"
+  snowflake_query_history_table: "{{ env_var('SNOWFLAKE_QUERY_HISTORY_TABLE', 'snowflake.account_usage.query_history') }}"
 ```
 
 ### Query Comments

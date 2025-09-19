@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_model_build_logger.is_adapter_type('snowflake'),
+    enabled=dbt_model_build_reporter.is_adapter_type('snowflake'),
     materialized='view'
 ) }}
 
@@ -7,6 +7,8 @@
 {% set tracking_schema = var('artifact_schema', target.schema) %}
 {% set tracking_database = target.database %}
 {% set monitor_start_date = var('model_monitor_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d')) %}
+{% set snowflake_query_history_table = var('snowflake_query_history_table', 'snowflake.account_usage.query_history') %}
+{% set snowflake_query_attribution_table = var('snowflake_query_attribution_table', 'snowflake.account_usage.query_attribution_history') %}
 
 with queries_with_metadata as (
   select 
@@ -23,7 +25,7 @@ with queries_with_metadata as (
     parse_json(
       regexp_substr(queries.query_text, '/\\* (\{.*?\}) \\*/', 1, 1, 'em')
     ) as query_metadata
-  from snowflake.account_usage.query_history as queries
+  from {{ snowflake_query_history_table }} as queries
   where queries.start_time >= '{{ monitor_start_date }}'
     and queries.database_name = '{{ tracking_database }}'
     and queries.query_text not like '%{{ tracking_table }}%'
@@ -49,7 +51,7 @@ select
   queries.credits_used_cloud_services,
   queries.bytes_scanned / (1024*1024*1024) as gb_scanned,
   query_attr.credits_attributed_compute,
-  query_attr.credits_used_query_acceleration
+  query_attr.credits_used_query_acceleration,
 
   -- Query metrics
   queries.total_elapsed_time,
@@ -63,7 +65,7 @@ inner join queries_with_metadata as queries
   and queries.start_time >= dbt.run_started_at
   and queries.start_time <= dbt.insert_timestamp
 
-left join snowflake.account_usage.query_attribution_history as query_attr
+left join {{ snowflake_query_attribution_table }} as query_attr
   on query_attr.query_id = queries.query_id
  and queries.start_time >= '{{ monitor_start_date }}'
 

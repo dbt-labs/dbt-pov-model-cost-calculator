@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_model_build_logger.is_adapter_type('databricks'),
+    enabled=dbt_model_build_reporter.is_adapter_type('databricks'),
     materialized='view'
 ) }}
 
@@ -7,6 +7,9 @@
 {% set tracking_schema = var('artifact_schema', target.schema) %}
 {% set tracking_database = target.database %}
 {% set monitor_start_date = var('model_monitor_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d')) %}
+{% set databricks_query_history_table = var('databricks_query_history_table', 'system.query.history') %}
+{% set databricks_billing_usage_table = var('databricks_billing_usage_table', 'system.billing.usage') %}
+{% set databricks_billing_prices_table = var('databricks_billing_prices_table', 'system.billing.list_prices') %}
 
 with query_with_compute as (
   select 
@@ -43,7 +46,7 @@ with query_with_compute as (
               connection_name:STRING
             >'
     ) as query_metadata
-  from system.query.history qh
+  from {{ databricks_query_history_table }} qh
   where qh.start_time >= '{{ monitor_start_date }}'
     and qh.execution_status = 'FINISHED'
 ),
@@ -69,7 +72,7 @@ total_query_time_per_billing_period as (
         0
       )
     ) as total_query_execution_seconds
-  from system.billing.usage bu
+  from {{ databricks_billing_usage_table }} bu
   left join query_with_compute qwc on bu.workspace_id = qwc.workspace_id
     and coalesce(bu.usage_metadata.cluster_id, bu.usage_metadata.warehouse_id) = coalesce(qwc.cluster_id, qwc.warehouse_id)
     -- Query overlaps with billing period (any overlap, not just fully contained)
@@ -114,7 +117,7 @@ query_costs as (
     qda.sku_name,
     qda.dbus_consumed * lp.pricing.effective_list.default as estimated_cost_usd
   from query_dbu_allocation qda
-  left join system.billing.list_prices lp on qda.sku_name = lp.sku_name
+  left join {{ databricks_billing_prices_table }} lp on qda.sku_name = lp.sku_name
     and current_date() >= date(lp.price_start_time)
     and (lp.price_end_time is null or current_date() < date(lp.price_end_time))
 )

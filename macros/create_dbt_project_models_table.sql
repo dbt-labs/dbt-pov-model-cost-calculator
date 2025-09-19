@@ -1,11 +1,16 @@
-{% macro create_artifact_table() %}
+{% macro create_dbt_project_models_table() %}
   {% if execute %}
     {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
     {% set tracking_schema = var('artifact_schema', target.schema) %}
     {% set tracking_database = target.database %}
-    {% set datatypes = get_adapter_datatypes() %}
+    {% set datatypes = dbt_model_build_reporter.get_adapter_datatypes() %}
     
+    {% set create_schema_sql %}
+      create schema if not exists {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }};
+    {% endset %}
     {% set create_table_sql %}
+      
+
       create table if not exists {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} (
         model_name {{ datatypes.varchar }},
         relation_name {{ datatypes.varchar }},
@@ -25,6 +30,7 @@
     {% endset %}
     
     {{ log("Creating artifact tracking table: " ~ tracking_database ~ "." ~ tracking_schema ~ "." ~ tracking_table, info=true) }}
+    {% do run_query(create_schema_sql) %}
     {% do run_query(create_table_sql) %}
     {{ log("Successfully created artifact tracking table", info=true) }}
   {% endif %}

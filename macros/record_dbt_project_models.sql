@@ -1,4 +1,4 @@
-{% macro log_model_executions() %}
+{% macro record_dbt_project_models() %}
   {% if execute %}
     {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
     {% set tracking_schema = var('artifact_schema', target.schema) %}
@@ -6,7 +6,7 @@
     
     {% set model_results = [] %}
     {% for result in results %}
-      {% if result.node.resource_type == 'model' and result.node.package_name != 'dbt_model_build_logger' %}
+      {% if result.node.resource_type == 'model' and result.node.package_name != 'dbt_model_build_reporter' %}
         {% do model_results.append(result) %}
       {% endif %}
     {% endfor %}

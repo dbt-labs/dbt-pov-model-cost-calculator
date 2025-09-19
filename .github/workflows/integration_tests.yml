@@ -1,0 +1,97 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        adapter: [snowflake, databricks, bigquery]
+      fail-fast: false
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dbt and Adapters
+        run: |
+          pip install dbt-core==1.7.0
+          pip install dbt-${{ matrix.adapter }}==1.7.0
+
+      - name: Set up Snowflake Environment Variables
+        if: matrix.adapter == 'snowflake'
+        run: |
+          echo "SNOWFLAKE_ACCOUNT=${{ secrets.SNOWFLAKE_ACCOUNT }}" >> $GITHUB_ENV
+          echo "SNOWFLAKE_USER=${{ secrets.SNOWFLAKE_USER }}" >> $GITHUB_ENV
+          echo "DBT_ENV_SECRET_SNOWFLAKE_PASSWORD=${{ secrets.SNOWFLAKE_PASSWORD }}" >> $GITHUB_ENV
+          echo "SNOWFLAKE_ROLE=${{ secrets.SNOWFLAKE_ROLE }}" >> $GITHUB_ENV
+          echo "SNOWFLAKE_DATABASE=${{ secrets.SNOWFLAKE_DATABASE }}" >> $GITHUB_ENV
+          echo "SNOWFLAKE_WAREHOUSE=${{ secrets.SNOWFLAKE_WAREHOUSE }}" >> $GITHUB_ENV
+          echo "SNOWFLAKE_SCHEMA=${{ secrets.SNOWFLAKE_SCHEMA }}" >> $GITHUB_ENV
+
+      - name: Set up Databricks Environment Variables
+        if: matrix.adapter == 'databricks'
+        run: |
+          echo "DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}" >> $GITHUB_ENV
+          echo "DATABRICKS_HTTP_PATH=${{ secrets.DATABRICKS_HTTP_PATH }}" >> $GITHUB_ENV
+          echo "DBT_ENV_SECRET_DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}" >> $GITHUB_ENV
+          echo "DATABRICKS_SCHEMA=${{ secrets.DATABRICKS_SCHEMA }}" >> $GITHUB_ENV
+
+      - name: Set up BigQuery Environment Variables
+        if: matrix.adapter == 'bigquery'
+        run: |
+          echo "BIGQUERY_PROJECT=${{ secrets.BIGQUERY_PROJECT }}" >> $GITHUB_ENV
+          echo "BIGQUERY_DATASET=${{ secrets.BIGQUERY_DATASET }}" >> $GITHUB_ENV
+          echo "DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY=${{ secrets.DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY }}" >> $GITHUB_ENV
+          echo "DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID=${{ secrets.DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID }}" >> $GITHUB_ENV
+          echo "BIGQUERY_CLIENT_ID=${{ secrets.BIGQUERY_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "BIGQUERY_CLIENT_X509_CERT_URL=${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}" >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: |
+          cd integration_tests/test_project
+          dbt deps --profiles-dir ..
+
+      - name: Debug Connection
+        run: |
+          cd integration_tests/test_project
+          dbt debug --target ${{ matrix.adapter }} --profiles-dir ..
+
+      - name: Run dbt Compile
+        run: |
+          cd integration_tests/test_project
+          dbt compile --target ${{ matrix.adapter }} --profiles-dir ..
+
+      - name: Run dbt Run
+        run: |
+          cd integration_tests/test_project
+          dbt run --target ${{ matrix.adapter }} --select tag:integration_test --profiles-dir ..
+
+      - name: Run dbt Test
+        run: |
+          cd integration_tests/test_project
+          dbt test --target ${{ matrix.adapter }} --profiles-dir ..
+
+      - name: Verify Artifact Table
+        run: |
+          cd integration_tests/test_project
+          dbt run-operation query --args '{sql: "select count(*) as execution_count from {{ var(\"artifact_table\", \"dbt_model_executions\") }} where model_name in (\"test_basic_model\", \"test_view_model\", \"test_incremental_model\") and status = \"success\""}' --target ${{ matrix.adapter }} --profiles-dir ..
+
+      - name: Clean Up
+        if: always()
+        run: |
+          cd integration_tests/test_project
+          dbt run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target ${{ matrix.adapter }} --profiles-dir .. || true
+          dbt run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target ${{ matrix.adapter }} --profiles-dir .. || true
+          dbt run-operation query --args '{sql: "drop view if exists test_view_model"}' --target ${{ matrix.adapter }} --profiles-dir .. || true
+          dbt run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target ${{ matrix.adapter }} --profiles-dir .. || true
