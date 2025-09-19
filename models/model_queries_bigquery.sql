@@ -13,8 +13,38 @@
     {% set tracking_region = 'us' %}
 {% endif %}
 
+with jobs_with_metadata as (
+  select 
+    jobs.job_id,
+    jobs.total_bytes_billed,
+    jobs.total_slot_ms,
+    jobs.total_bytes_processed,
+    jobs.cache_hit,
+    jobs.creation_time,
+    jobs.start_time,
+    jobs.end_time,
+    json_extract_scalar(
+      regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
+      '$.dbt_cloud_job_id'
+    ) as extracted_dbt_cloud_job_id,
+    json_extract_scalar(
+      regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
+      '$.node_name'
+    ) as extracted_node_name,
+    json_extract_scalar(
+      regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
+      '$.invocation_id'
+    ) as extracted_invocation_id
+  from `{{ target.project }}.region-{{ tracking_region }}.INFORMATION_SCHEMA.JOBS` as jobs
+  where jobs.job_type = 'QUERY'
+    and jobs.creation_time >= timestamp('{{ monitor_start_date }}')
+    and jobs.destination_table.table_id != '{{ tracking_table }}'
+    and jobs.project_id = '{{ tracking_database }}'
+)
+
 select 
   jobs.job_id as query_id,
+  dbt.run_started_at,
   dbt.model_name,
   dbt.model_package,
   dbt.dbt_cloud_job_id,
@@ -22,6 +52,18 @@ select
   dbt.execution_time,
   dbt.status,
   dbt.invocation_id,
+  dbt.dbt_version,
+ 
+  -- Cost information
+  jobs.total_slot_ms / 1000 / 60 as slot_minutes,
+  jobs.total_bytes_billed / (1024*1024*1024) as gb_billed,
+  case 
+    when jobs.total_bytes_billed > 0 then 
+      (jobs.total_bytes_billed / (1024*1024*1024)) * 5.0  -- $5 per GB for BigQuery
+    else 0 
+  end as estimated_cost_usd,
+
+  -- Query metrics
   jobs.total_bytes_billed,
   jobs.total_slot_ms,
   jobs.total_bytes_processed,
@@ -29,26 +71,16 @@ select
   jobs.creation_time as query_creation_time,
   jobs.start_time as query_start_time,
   jobs.end_time as query_end_time,
-  jobs.total_slot_ms / 1000 / 60 as slot_minutes,
-  jobs.total_bytes_billed / (1024*1024*1024) as gb_billed,
-  case 
-    when jobs.total_bytes_billed > 0 then 
-      (jobs.total_bytes_billed / (1024*1024*1024)) * 5.0  -- $5 per GB for BigQuery
-    else 0 
-  end as estimated_cost_usd
 
 from {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} as dbt
-left join `{{ target.project }}.region-{{ tracking_region }}.INFORMATION_SCHEMA.JOBS` as jobs
-  on jobs.job_type = 'QUERY'
-  and jobs.query like '%' || dbt.model_name || '%'
-  and jobs.query like '%"dbt_cloud_job_id": "' || dbt.dbt_cloud_job_id || '",%'
+
+inner join jobs_with_metadata as jobs
+  on jobs.extracted_dbt_cloud_job_id = dbt.dbt_cloud_job_id
+  and jobs.extracted_node_name = dbt.model_name
+  and jobs.extracted_invocation_id = dbt.invocation_id
   and jobs.creation_time >= timestamp(dbt.run_started_at)
   and jobs.creation_time <= dbt.insert_timestamp
 
 where dbt.dbt_cloud_job_id is not null
   and dbt.dbt_cloud_job_id != 'none'
   and dbt.model_name != 'model_queries'
-  and dbt.status = 'success'
-  and jobs.project_id = '{{ tracking_database }}'
-  and jobs.destination_table.table_id != '{{ tracking_table }}'
-  and jobs.creation_time >= timestamp('{{ monitor_start_date }}')

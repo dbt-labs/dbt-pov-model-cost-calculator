@@ -27,7 +27,22 @@ with query_with_compute as (
     qh.produced_rows,
     qh.written_bytes,
     left(qh.statement_text, 200) as query_preview,
-    qh.statement_text as query_text
+    qh.statement_text as query_text,
+    from_json(
+      regexp_extract(qh.statement_text, '/\\* (.*?) \\*/', 1),
+      'STRUCT<app:STRING,
+              dbt_version:STRING,
+              dbt_databricks_version:STRING,
+              databricks_sql_connector_version:STRING,
+              profile_name:STRING,
+              target_name:STRING,
+              node_id:STRING,
+              node_name:STRING,
+              dbt_cloud_job_id:STRING,
+              invocation_id:STRING,
+              connection_name:STRING
+            >'
+    ) as query_metadata
   from system.query.history qh
   where qh.start_time >= '{{ monitor_start_date }}'
     and qh.execution_status = 'FINISHED'
@@ -105,26 +120,17 @@ query_costs as (
 )
 
 select 
+  
+  qwc.statement_id as query_id,
+  dbt.run_started_at,
   dbt.model_name,
   dbt.model_package,
   dbt.dbt_cloud_job_id,
   dbt.dbt_cloud_run_id,
-  dbt.execution_time as dbt_execution_time,
+  dbt.execution_time,
   dbt.status,
   dbt.invocation_id,
   dbt.dbt_version,
-  
-  -- Query information
-  qwc.statement_id as query_id,
-  qwc.query_text,
-  qwc.query_preview,
-  qwc.executed_by,
-  qwc.client_application,
-  qwc.start_time as query_start_time,
-  qwc.end_time as query_end_time,
-  qwc.execution_duration_ms,
-  qwc.execution_seconds,
-  qwc.execution_hours,
   
   -- Compute information
   qwc.compute_type,
@@ -139,6 +145,9 @@ select
   qc.estimated_cost_usd,
   
   -- Query metrics
+  qwc.execution_duration_ms,
+  qwc.execution_seconds,
+  qwc.execution_hours,
   qwc.read_rows,
   qwc.read_bytes,
   qwc.produced_rows,
@@ -161,8 +170,9 @@ select
 
 from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
 left join query_with_compute qwc
-  on qwc.query_text like '%' || dbt.model_name || '%'
-  and qwc.query_text like '%"dbt_cloud_job_id": "' || dbt.dbt_cloud_job_id || '",%'
+  on qwc.query_metadata.dbt_cloud_job_id = dbt.dbt_cloud_job_id
+  and qwc.query_metadata.node_name = dbt.model_name
+  and qwc.query_metadata.invocation_id = dbt.invocation_id
   and qwc.query_text not like '%{{ tracking_table }}%'
   and qwc.start_time >= dbt.run_started_at
   and qwc.start_time <= dbt.insert_timestamp
