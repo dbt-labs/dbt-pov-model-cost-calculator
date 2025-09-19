@@ -64,12 +64,12 @@ jobs:
 
       - name: Debug Connection
         run: |
-          cd integration_tests/test_project
+          cd integration_tests/
           dbt debug --target ${{ matrix.adapter }} --profiles-dir ..
 
       - name: Run dbt Compile
         run: |
-          cd integration_tests/test_project
+          cd integration_tests/
           dbt compile --target ${{ matrix.adapter }} --profiles-dir ..
 
       - name: Run dbt Run
