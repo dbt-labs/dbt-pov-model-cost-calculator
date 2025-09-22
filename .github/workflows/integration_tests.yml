@@ -59,34 +59,28 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd integration_tests/test_project
-          dbt deps --profiles-dir ../
+          dbt deps --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Debug Connection
         run: |
-          cd integration_tests/test_project
-          dbt debug --target ${{ matrix.adapter }} --profiles-dir ../
+          dbt debug --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Run dbt Compile
         run: |
-          cd integration_tests/test_project
-          dbt compile --target ${{ matrix.adapter }} --profiles-dir ../
+          dbt compile --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Run dbt Run
         run: |
-          cd integration_tests/test_project
-          dbt run --target ${{ matrix.adapter }} --select tag:integration_test --profiles-dir ../
+          dbt run --target ${{ matrix.adapter }} --select tag:integration_test --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Verify Artifact Table
         run: |
-          cd integration_tests/test_project
-          dbt run-operation query --args '{sql: "select count(*) as execution_count from {{ var(\"artifact_table\", \"dbt_model_executions\") }} where model_name in (\"test_basic_model\", \"test_view_model\", \"test_incremental_model\") and status = \"success\""}' --target ${{ matrix.adapter }} --profiles-dir ../
+          dbt run-operation query --args '{sql: "select count(*) as execution_count from {{ var(\"artifact_table\", \"dbt_model_executions\") }} where model_name in (\"test_basic_model\", \"test_view_model\", \"test_incremental_model\") and status = \"success\""}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Clean Up
         if: always()
         run: |
-          cd integration_tests/test_project
-          dbt run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target ${{ matrix.adapter }} --profiles-dir ../ || true
-          dbt run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target ${{ matrix.adapter }} --profiles-dir ../ || true
-          dbt run-operation query --args '{sql: "drop view if exists test_view_model"}' --target ${{ matrix.adapter }} --profiles-dir ../ || true
-          dbt run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target ${{ matrix.adapter }} --profiles-dir ../ || true
+          dbt run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+          dbt run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+          dbt run-operation query --args '{sql: "drop view if exists test_view_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+          dbt run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
