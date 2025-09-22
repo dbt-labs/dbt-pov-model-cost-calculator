@@ -14,6 +14,34 @@ jobs:
         adapter: [snowflake, databricks, bigquery]
       fail-fast: false
     
+    env:
+      # Snowflake Environment Variables
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      DBT_ENV_SECRET_SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      
+      # Databricks Environment Variables
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DBT_ENV_SECRET_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
+      DATABRICKS_SCHEMA: ${{ secrets.DATABRICKS_SCHEMA }}
+      
+      # BigQuery Environment Variables
+      BIGQUERY_PROJECT: ${{ secrets.BIGQUERY_PROJECT }}
+      BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
+      BIGQUERY_KEYFILE_TYPE: ${{ secrets.BIGQUERY_KEYFILE_TYPE }}
+      DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID: ${{ secrets.BIGQUERY_PRIVATE_KEY_ID }}
+      DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY: ${{ secrets.BIGQUERY_PRIVATE_KEY }}
+      BIGQUERY_CLIENT_EMAIL: ${{ secrets.BIGQUERY_CLIENT_EMAIL }}
+      BIGQUERY_CLIENT_ID: ${{ secrets.BIGQUERY_CLIENT_ID }}
+      BIGQUERY_CLIENT_X509_CERT_URL: ${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}
+      BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -28,34 +56,6 @@ jobs:
           pip install dbt-core
           pip install dbt-${{ matrix.adapter }}
 
-      - name: Set up Snowflake Environment Variables
-        if: matrix.adapter == 'snowflake'
-        run: |
-          echo "SNOWFLAKE_ACCOUNT=${{ secrets.SNOWFLAKE_ACCOUNT }}" >> $GITHUB_ENV
-          echo "SNOWFLAKE_USER=${{ secrets.SNOWFLAKE_USER }}" >> $GITHUB_ENV
-          echo "DBT_ENV_SECRET_SNOWFLAKE_PASSWORD=${{ secrets.SNOWFLAKE_PASSWORD }}" >> $GITHUB_ENV
-          echo "SNOWFLAKE_ROLE=${{ secrets.SNOWFLAKE_ROLE }}" >> $GITHUB_ENV
-          echo "SNOWFLAKE_DATABASE=${{ secrets.SNOWFLAKE_DATABASE }}" >> $GITHUB_ENV
-          echo "SNOWFLAKE_WAREHOUSE=${{ secrets.SNOWFLAKE_WAREHOUSE }}" >> $GITHUB_ENV
-          echo "SNOWFLAKE_SCHEMA=${{ secrets.SNOWFLAKE_SCHEMA }}" >> $GITHUB_ENV
-
-      - name: Set up Databricks Environment Variables
-        if: matrix.adapter == 'databricks'
-        run: |
-          echo "DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}" >> $GITHUB_ENV
-          echo "DATABRICKS_HTTP_PATH=${{ secrets.DATABRICKS_HTTP_PATH }}" >> $GITHUB_ENV
-          echo "DBT_ENV_SECRET_DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}" >> $GITHUB_ENV
-          echo "DATABRICKS_SCHEMA=${{ secrets.DATABRICKS_SCHEMA }}" >> $GITHUB_ENV
-
-      - name: Set up BigQuery Environment Variables
-        if: matrix.adapter == 'bigquery'
-        run: |
-          echo "BIGQUERY_PROJECT=${{ secrets.BIGQUERY_PROJECT }}" >> $GITHUB_ENV
-          echo "BIGQUERY_DATASET=${{ secrets.BIGQUERY_DATASET }}" >> $GITHUB_ENV
-          echo "DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY=${{ secrets.DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY }}" >> $GITHUB_ENV
-          echo "DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID=${{ secrets.DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID }}" >> $GITHUB_ENV
-          echo "BIGQUERY_CLIENT_ID=${{ secrets.BIGQUERY_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "BIGQUERY_CLIENT_X509_CERT_URL=${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}" >> $GITHUB_ENV
 
       - name: Install Dependencies
         run: |
