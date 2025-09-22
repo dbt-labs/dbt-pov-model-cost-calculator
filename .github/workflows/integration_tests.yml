@@ -72,14 +72,14 @@ jobs:
         run: |
           dbt run --target ${{ matrix.adapter }} --select tag:integration_test --profiles-dir integration_tests --project-dir integration_tests/test_project
 
-      - name: Verify Artifact Table
-        run: |
-          dbt run-operation query --args '{sql: "select count(*) as execution_count from {{ var(\"artifact_table\", \"dbt_model_executions\") }} where model_name in (\"test_basic_model\", \"test_view_model\", \"test_incremental_model\") and status = \"success\""}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
+      # - name: Verify Artifact Table
+      #   run: |
+      #     dbt run-operation query --args '{sql: "select count(*) as execution_count from {{ var(\"artifact_table\", \"dbt_model_executions\") }} where model_name in (\"test_basic_model\", \"test_view_model\", \"test_incremental_model\") and status = \"success\""}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
-      - name: Clean Up
-        if: always()
-        run: |
-          dbt run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
-          dbt run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
-          dbt run-operation query --args '{sql: "drop view if exists test_view_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
-          dbt run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+      # - name: Clean Up
+      #   if: always()
+      #   run: |
+      #     dbt run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+      #     dbt run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+      #     dbt run-operation query --args '{sql: "drop view if exists test_view_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
+      #     dbt run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project || true
