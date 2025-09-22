@@ -25,16 +25,9 @@ For each model execution, the plugin captures:
 
 ## Installation
 
-1. **Clone or download this repository**
-2. **Copy the plugin files to your dbt project**:
-   ```bash
-   # Copy the macros directory
-   cp -r macros/ /path/to/your/dbt/project/
-   
-   # Copy the dbt_project.yml configuration (merge with your existing config)
-   ```
+1. Update packages.yml
 
-3. **Configure your dbt_project.yml**:
+2. **Configure your dbt_project.yml**:
    ```yaml
    # Add to your existing dbt_project.yml
    on-run-end:
@@ -48,7 +41,7 @@ For each model execution, the plugin captures:
      artifact_table: "dbt_model_executions"
    ```
 
-4. **Run your first dbt command**:
+3. **Run your first dbt command**:
    ```bash
    dbt run
    ```
