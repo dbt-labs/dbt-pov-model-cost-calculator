@@ -14,6 +14,10 @@ test-paths: ["tests"]
 seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
+models:
+  +dbt_model_build_reporter:
+    +enabled: "{{ env_var('DBT_ENABLE_MBR_MODELS', true) | as_bool }}"
+
 
 target-path: "target" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
@@ -29,12 +33,14 @@ clean-targets: # directories to be removed by `dbt clean`
 # models:
 # +dbt_model_build_logger:
 # Configure the on-run-start hook to create the tracking table
+# Controlled by DBT_ENABLE_PRE_HOOKS environment variable
 on-run-start:
-  - "{{ create_dbt_project_models_table() }}"
+  - "{% if env_var('DBT_ENABLE_MBR_PRE_HOOKS', 'true') | as_bool %}{{ create_dbt_project_models_table() }}{% endif %}"
 
 # Configure the on-run-end hook to log model executions
+# Controlled by DBT_ENABLE_POST_HOOKS environment variable
 on-run-end:
-  - "{{ record_dbt_project_models() }}"
+  - "{% if env_var('DBT_ENABLE_MBR_POST_HOOKS', 'true') | as_bool %}{{ record_dbt_project_models() }}{% endif %}"
 
 # Configure query comments to include comprehensive metadata
 query-comment: "{{ dbt_model_build_reporter.query_comment(node) }}"
