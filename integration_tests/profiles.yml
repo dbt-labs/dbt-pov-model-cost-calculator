@@ -1,0 +1,46 @@
+test_project:
+  target: dev
+  outputs:
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('DBT_ENV_SECRET_SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA') }}"
+      threads: 4
+      client_session_keep_alive: false
+      query_tag: "dbt_model_build_logger_integration_test"
+
+    databricks:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      token: "{{ env_var('DBT_ENV_SECRET_DATABRICKS_TOKEN') }}"
+      catalog: "{{ env_var('DATABRICKS_CATALOG') }}"
+      schema: "{{ env_var('DATABRICKS_SCHEMA') }}"
+      threads: 4
+      client_session_keep_alive: false
+      query_tag: "dbt_model_build_logger_integration_test"
+
+    bigquery:
+      type: bigquery
+      method: service-account-json
+      project: "{{ env_var('BIGQUERY_PROJECT') }}"
+      dataset: "{{ env_var('BIGQUERY_DATASET') }}"
+      keyfile_json:
+        type: "{{ env_var('BIGQUERY_KEYFILE_TYPE', 'service_account') }}"
+        project_id: "{{ env_var('BIGQUERY_PROJECT') }}"
+        private_key_id: "{{ env_var('DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID') }}"
+        private_key: "{{ env_var('DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY') }}"
+        client_email: "{{ env_var('BIGQUERY_CLIENT_EMAIL') }}"
+        client_id: "{{ env_var('BIGQUERY_CLIENT_ID') }}"
+        auth_uri: "{{ env_var('BIGQUERY_AUTH_URI', 'https://accounts.google.com/o/oauth2/auth') }}"
+        token_uri: "{{ env_var('BIGQUERY_TOKEN_URI', 'https://oauth2.googleapis.com/token') }}"
+        auth_provider_x509_cert_url: "{{ env_var('BIGQUERY_AUTH_PROVIDER_X509_CERT_URL', 'https://www.googleapis.com/oauth2/v1/certs') }}"
+        client_x509_cert_url: "{{ env_var('BIGQUERY_CLIENT_X509_CERT_URL') }}"
+      threads: 4
+      location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
+      query_tag: "dbt_model_build_logger_integration_test"
