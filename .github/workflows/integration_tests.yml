@@ -18,7 +18,7 @@ jobs:
       # Snowflake Environment Variables
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-      DBT_ENV_SECRET_SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      DBT_ENV_SECRET_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_ENV_SECRET_SNOWFLAKE_PASSWORD }}
       SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
       SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
@@ -27,16 +27,15 @@ jobs:
       # Databricks Environment Variables
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-      DBT_ENV_SECRET_DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DBT_ENV_SECRET_DATABRICKS_TOKEN: ${{ secrets.DBT_ENV_SECRET_DATABRICKS_TOKEN }}
       DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
       DATABRICKS_SCHEMA: ${{ secrets.DATABRICKS_SCHEMA }}
       
       # BigQuery Environment Variables
       BIGQUERY_PROJECT: ${{ secrets.BIGQUERY_PROJECT }}
       BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
-      BIGQUERY_KEYFILE_TYPE: ${{ secrets.BIGQUERY_KEYFILE_TYPE }}
-      DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID: ${{ secrets.BIGQUERY_PRIVATE_KEY_ID }}
-      DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY: ${{ secrets.BIGQUERY_PRIVATE_KEY }}
+      DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID: ${{ secrets.DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY_ID }}
+      DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY: ${{ secrets.DBT_ENV_SECRET_BIGQUERY_PRIVATE_KEY }}
       BIGQUERY_CLIENT_EMAIL: ${{ secrets.BIGQUERY_CLIENT_EMAIL }}
       BIGQUERY_CLIENT_ID: ${{ secrets.BIGQUERY_CLIENT_ID }}
       BIGQUERY_CLIENT_X509_CERT_URL: ${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}
@@ -61,9 +60,9 @@ jobs:
         run: |
           dbt deps --profiles-dir integration_tests --project-dir integration_tests/test_project
 
-      # - name: Debug Connection
-      #   run: |
-      #     dbt debug --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
+      - name: Debug Connection
+        run: |
+          dbt debug --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Run dbt Compile
         run: |
