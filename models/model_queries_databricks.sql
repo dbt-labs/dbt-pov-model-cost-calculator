@@ -42,6 +42,7 @@ with query_with_compute as (
               node_id:STRING,
               node_name:STRING,
               dbt_cloud_job_id:STRING,
+              dbt_cloud_run_id:STRING,
               invocation_id:STRING,
               connection_name:STRING
             >'
@@ -173,7 +174,7 @@ select
 
 from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
 left join query_with_compute qwc
-  on qwc.query_metadata.dbt_cloud_job_id = dbt.dbt_cloud_job_id
+  on qwc.query_metadata.dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and qwc.query_metadata.node_name = dbt.model_name
   and qwc.query_metadata.invocation_id = dbt.invocation_id
   and qwc.query_text not like '%{{ tracking_table }}%'
@@ -182,6 +183,6 @@ left join query_with_compute qwc
 
 left join query_costs qc on qwc.statement_id = qc.statement_id
 
-where dbt.dbt_cloud_job_id is not null
-  and dbt.dbt_cloud_job_id != 'none'
+where dbt.dbt_cloud_run_id is not null
+  and dbt.dbt_cloud_run_id != 'none'
   and dbt.model_name != 'model_queries'

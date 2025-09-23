@@ -25,6 +25,10 @@ with jobs_with_metadata as (
     ) as extracted_dbt_cloud_job_id,
     json_extract_scalar(
       regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
+      '$.dbt_cloud_run_id'
+    ) as extracted_dbt_cloud_run_id,
+    json_extract_scalar(
+      regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
       '$.node_name'
     ) as extracted_node_name,
     json_extract_scalar(
@@ -71,7 +75,7 @@ select
 from {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} as dbt
 
 inner join jobs_with_metadata as jobs
-  on jobs.extracted_dbt_cloud_job_id = dbt.dbt_cloud_job_id
+   on jobs.extracted_dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and jobs.extracted_node_name = dbt.model_name
   and jobs.extracted_invocation_id = dbt.invocation_id
   and jobs.creation_time >= timestamp(dbt.run_started_at)

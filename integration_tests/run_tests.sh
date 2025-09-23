@@ -1,11 +1,34 @@
 #!/bin/bash
 
 # Integration Test Runner for dbt_model_build_reporter
-# Usage: ./run_tests.sh [adapter] [command]
+# Usage: ./run_tests.sh [-c command] [adapter] [test_command]
+# Options:
+#   -c command    Choose between 'dbt' or 'dbtf' (default: dbt)
 # Adapters: snowflake, databricks, bigquery, all
 # Commands: deps, debug, compile, run, test, clean
 
 set -e
+
+# Default command
+DBT_COMMAND="dbt"
+
+# Parse optional arguments
+while getopts ":c:" opt; do
+  case ${opt} in
+    c )
+      DBT_COMMAND=$OPTARG
+      ;;
+    \? )
+      echo "Usage: $0 [-c command] [adapter] [test_command]"
+      echo "Options:"
+      echo "  -c command    Choose between 'dbt' or 'dbtf' (default: dbt)"
+      echo "Adapters: snowflake, databricks, bigquery, all"
+      echo "Commands: deps, debug, compile, run, test, clean"
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND -1))
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
@@ -103,31 +126,31 @@ run_dbt_command() {
         return 1
     fi
     
-    print_status "Running dbt $command for $adapter..."
+    print_status "Running $DBT_COMMAND $command for $adapter..."
     
     cd test_project
     
     case $command in
         "deps")
-            dbt deps --profiles-dir ..
+            $DBT_COMMAND deps --profiles-dir ..
             ;;
         "parse")
-            dbt parse --target $adapter --profiles-dir ..
+            $DBT_COMMAND parse --target $adapter --profiles-dir ..
             ;;
         "compile")
-            dbt compile --target $adapter --profiles-dir ..
+            $DBT_COMMAND compile --target $adapter --profiles-dir ..
             ;;
         "run")
-            dbt run --target $adapter --profiles-dir ..
+            $DBT_COMMAND run --target $adapter --profiles-dir ..
             ;;
         "test")
-            dbt test --target $adapter --profiles-dir ..
+            $DBT_COMMAND test --target $adapter --profiles-dir ..
             ;;
         "clean")
-            dbt run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
-            dbt run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
-            dbt run-operation query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
-            dbt run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
+            $DBT_COMMAND run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
+            $DBT_COMMAND run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
+            $DBT_COMMAND run-operation query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
+            $DBT_COMMAND run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
             ;;
         *)
             print_error "Unknown command: $command"
@@ -138,9 +161,9 @@ run_dbt_command() {
     cd ..
     
     if [ $? -eq 0 ]; then
-        print_success "dbt $command completed successfully for $adapter"
+        print_success "$DBT_COMMAND $command completed successfully for $adapter"
     else
-        print_error "dbt $command failed for $adapter"
+        print_error "$DBT_COMMAND $command failed for $adapter"
         exit 1
     fi
 }
@@ -148,6 +171,8 @@ run_dbt_command() {
 # Function to run full test suite for an adapter
 run_full_test() {
     local adapter=$1
+    export DBT_CLOUD_RUN_ID="$(date +%s)"
+    export DBT_CLOUD_JOB_ID="integration_test_run"
     
     print_status "Running full test suite for $adapter..."
     
@@ -161,7 +186,8 @@ run_full_test() {
 
 # Main execution
 print_status "Starting integration tests for dbt_model_build_logger"
-print_status "Adapter: $ADAPTER, Command: $COMMAND"
+print_status "Using command: $DBT_COMMAND"
+print_status "Adapter: $ADAPTER, Test Command: $COMMAND"
 
 # Check if we're in the right directory
 if [ ! -f "test_project/dbt_project.yml" ]; then

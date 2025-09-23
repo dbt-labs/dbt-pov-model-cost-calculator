@@ -45,7 +45,8 @@
             dbt_cloud_job_id,
             dbt_cloud_project_id,
             dbt_version,
-            run_started_at
+            run_started_at,
+            node_config
           ) values
           {% for result in batch_results %}
 
@@ -63,7 +64,8 @@
               {% if dbt_cloud_job_id != 'none' %}'{{ dbt_cloud_job_id }}'{% else %}null{% endif %},
               {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
               '{{ dbt_version }}',
-              '{{ run_started_at }}'
+              '{{ run_started_at }}',
+              '{{ result.node.config.to_dict() | tojson }}'
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}

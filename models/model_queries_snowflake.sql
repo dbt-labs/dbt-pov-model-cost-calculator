@@ -9,7 +9,7 @@
 {% set monitor_start_date = var('model_monitor_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d')) %}
 {% set snowflake_query_history_table = var('snowflake_query_history_table', 'snowflake.account_usage.query_history') %}
 {% set snowflake_query_attribution_table = var('snowflake_query_attribution_table', 'snowflake.account_usage.query_attribution_history') %}
-
+{% set snowflake_credit_rate = var('snowflake_credit_rate', 3) %}
 with queries_with_metadata as (
   select 
       queries.query_id,
@@ -51,16 +51,16 @@ select
   queries.credits_used_cloud_services,
   queries.bytes_scanned / (1024*1024*1024) as gb_scanned,
   query_attr.credits_attributed_compute,
-  query_attr.credits_used_query_acceleration,
+  query_attr.credits_attributed_compute * {{ snowflake_credit_rate }} as attributed_compute_cost,
 
   -- Query metrics
   queries.total_elapsed_time,
-  queries.execution_time as snowflake_execution_time,
-  queries.queued_overload_time,
+  queries.execution_time as snowflake_execution_time
 
 from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
 inner join queries_with_metadata as queries
   on queries.query_metadata:dbt_cloud_job_id = dbt.dbt_cloud_job_id
+  and queries.query_metadata:dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and queries.query_metadata:node_name = dbt.model_name
   and queries.start_time >= dbt.run_started_at
   and queries.start_time <= dbt.insert_timestamp

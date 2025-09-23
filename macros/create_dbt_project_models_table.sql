@@ -25,7 +25,8 @@
         dbt_cloud_job_id {{ datatypes.varchar }},
         dbt_cloud_project_id {{ datatypes.varchar }},
         dbt_version {{ datatypes.varchar }},
-        run_started_at {{ datatypes.timestamp }}
+        run_started_at {{ datatypes.timestamp }},
+        node_config {{ datatypes.varchar }}
       )
     {% endset %}
     
