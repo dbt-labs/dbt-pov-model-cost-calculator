@@ -70,7 +70,7 @@ select
   jobs.start_time as query_start_time,
   jobs.end_time as query_end_time,
 
-from {{ tracking_database }}.{{ tracking_schema }}.{{ tracking_table }} as dbt
+from {{ dbt_model_build_reporter.get_tracking_table_fqn() }} as dbt
 
 inner join jobs_with_metadata as jobs
    on jobs.extracted_dbt_cloud_run_id = dbt.dbt_cloud_run_id

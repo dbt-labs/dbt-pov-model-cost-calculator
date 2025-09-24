@@ -173,7 +173,7 @@ select
     else null
   end as cost_per_mb_written
 
-from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
+from {{ dbt_model_build_reporter.get_tracking_table_fqn() }} as dbt
 left join query_with_compute qwc
   on qwc.query_metadata.dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and qwc.query_metadata.node_name = dbt.model_name

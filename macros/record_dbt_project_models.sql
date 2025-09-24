@@ -1,8 +1,6 @@
 {% macro record_dbt_project_models() %}
   {% if execute %}
-    {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
-    {% set tracking_schema = var('artifact_schema', target.schema) %}
-    {% set tracking_database = target.database %}
+    {% set tracking_table_fqn = dbt_model_build_reporter.get_tracking_table_fqn() %}
     
     {% set model_results = [] %}
     {% for result in results %}
@@ -31,7 +29,7 @@
         {% set run_started_at = run_started_at %}
         
         {% set batch_insert_sql %}
-          insert into {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} (
+          insert into {{ tracking_table_fqn }} (
             model_name,
             relation_name,
             model_package,

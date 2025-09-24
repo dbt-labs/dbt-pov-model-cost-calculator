@@ -189,6 +189,7 @@ print_status "Adapter: $ADAPTER, Test Command: $COMMAND"
 
 export DBT_CLOUD_RUN_ID="$(date +%s)"
 export DBT_CLOUD_JOB_ID="integration_test_run"
+export dbtf="$HOME/.local/bin/dbt"
 # Check if we're in the right directory
 if [ ! -f "test_project/dbt_project.yml" ]; then
     print_error "Please run this script from the integration_tests directory"

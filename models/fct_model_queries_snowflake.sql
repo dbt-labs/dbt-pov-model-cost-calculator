@@ -58,7 +58,7 @@ select
   queries.total_elapsed_time,
   queries.execution_time as snowflake_execution_time
 
-from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
+from {{ dbt_model_build_reporter.get_tracking_table_fqn() }} as dbt
 inner join queries_with_metadata as queries
   on queries.query_metadata:dbt_cloud_job_id = dbt.dbt_cloud_job_id
   and queries.query_metadata:dbt_cloud_run_id = dbt.dbt_cloud_run_id
