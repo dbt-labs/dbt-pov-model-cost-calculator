@@ -1,10 +1,10 @@
 {% macro _extract_node_config(node) %}
-  {% if node.config is mapping and to_json is defined %}
-      {% set node_config = node.config | to_json  %}
+  {% if node.config is mapping %}
+      {% set node_config = node.config | tojson  %}
   {% elif node.config.to_dict is defined %}
-    {% set node_config = node.config.to_dict() | to_json %}
+    {% set node_config = node.config.to_dict() | tojson %}
   {% else %}
-    {% set node_config = 'unable to extract' %}
+    {% set node_config = 'non-serializable node config recieved' %}
   {% endif %}
   {{ return(node_config) }}
 {% endmacro %}
