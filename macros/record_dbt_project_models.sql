@@ -72,7 +72,7 @@
               {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
               '{{ dbt_version }}',
               '{{ run_started_at }}',
-              '{{ _extract_node_config(result.node) }}'
+              '{{ dbt_model_build_reporter._extract_node_config(result.node) }}'
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
