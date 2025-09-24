@@ -1,6 +1,7 @@
 {{ config(
     enabled=dbt_model_build_reporter.is_adapter_type('snowflake'),
-    materialized='view'
+    materialized='view',
+    alias='fct_dbt_model_queries'
 ) }}
 
 {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
