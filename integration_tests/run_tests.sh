@@ -171,8 +171,6 @@ run_dbt_command() {
 # Function to run full test suite for an adapter
 run_full_test() {
     local adapter=$1
-    export DBT_CLOUD_RUN_ID="$(date +%s)"
-    export DBT_CLOUD_JOB_ID="integration_test_run"
     
     print_status "Running full test suite for $adapter..."
     
@@ -189,6 +187,8 @@ print_status "Starting integration tests for dbt_model_build_logger"
 print_status "Using command: $DBT_COMMAND"
 print_status "Adapter: $ADAPTER, Test Command: $COMMAND"
 
+export DBT_CLOUD_RUN_ID="$(date +%s)"
+export DBT_CLOUD_JOB_ID="integration_test_run"
 # Check if we're in the right directory
 if [ ! -f "test_project/dbt_project.yml" ]; then
     print_error "Please run this script from the integration_tests directory"
