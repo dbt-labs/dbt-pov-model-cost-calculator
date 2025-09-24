@@ -1,3 +1,14 @@
+{% macro _extract_node_config(node) %}
+  {% if node.config is mapping %}
+      {% set node_config = node.config | tojson  %}
+  {% elif node.config.to_dict is defined %}
+    {% set node_config = node.config.to_dict() | tojson %}
+  {% else %}
+    {% set node_config = 'non-serializable node config recieved' %}
+  {% endif %}
+  {{ return(node_config) }}
+{% endmacro %}
+
 {% macro record_dbt_project_models() %}
   {% if execute %}
     {% set tracking_table_fqn = dbt_model_build_reporter.get_tracking_table_fqn() %}
@@ -27,7 +38,6 @@
         {% set dbt_cloud_project_id = env_var('DBT_CLOUD_PROJECT_ID', 'none') %}
         {% set dbt_version = dbt_version %}
         {% set run_started_at = run_started_at %}
-        
         {% set batch_insert_sql %}
           insert into {{ tracking_table_fqn }} (
             model_name,
@@ -47,7 +57,6 @@
             node_config
           ) values
           {% for result in batch_results %}
-
             (
               '{{ result.node.name }}',
               '{{ result.relation_name}}',
@@ -63,7 +72,7 @@
               {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
               '{{ dbt_version }}',
               '{{ run_started_at }}',
-              '{{ result.node.config.to_dict() | tojson }}'
+              '{{ dbt_model_build_reporter._extract_node_config(result.node) }}'
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
