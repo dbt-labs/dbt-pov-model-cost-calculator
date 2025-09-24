@@ -1,6 +1,7 @@
 {{ config(
     enabled=dbt_model_build_reporter.is_adapter_type('bigquery'),
-    materialized='view'
+    materialized='view',
+    alias='fct_dbt_model_queries'
 ) }}
 
 {% set tracking_table = var('artifact_table', 'dbt_model_executions') %}
@@ -19,6 +20,7 @@ with jobs_with_metadata as (
     jobs.creation_time,
     jobs.start_time,
     jobs.end_time,
+    jobs.reservation_id,
     json_extract_scalar(
       regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
       '$.dbt_cloud_job_id'
@@ -55,18 +57,14 @@ select
   dbt.dbt_version,
  
   -- Cost information
+  jobs.reservation_id,
   jobs.total_slot_ms / 1000 / 60 as slot_minutes,
-  jobs.total_bytes_billed / (1024*1024*1024) as gb_billed,
-  case 
-    when jobs.total_bytes_billed > 0 then 
-      (jobs.total_bytes_billed / (1024*1024*1024)) * 5.0  -- $5 per GB for BigQuery
-    else 0 
-  end as estimated_cost_usd,
-
-  -- Query metrics
+  SAFE_DIVIDE(jobs.total_slot_ms,(TIMESTAMP_DIFF(jobs.end_time, jobs.start_time, MILLISECOND))) AS job_avg_slots,
   jobs.total_bytes_billed,
   jobs.total_slot_ms,
   jobs.total_bytes_processed,
+
+  -- Query metrics
   jobs.cache_hit,
   jobs.creation_time as query_creation_time,
   jobs.start_time as query_start_time,
