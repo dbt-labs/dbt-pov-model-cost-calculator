@@ -9,6 +9,28 @@
 
 set -e
 
+# Enable alias expansion for non-interactive shells
+shopt -s expand_aliases
+
+# Define dbtf alias early in the script
+alias dbtf="$HOME/.local/bin/dbt"
+
+# Function to resolve the actual command to use
+resolve_dbt_command() {
+    local cmd=$1
+    case $cmd in
+        "dbtf")
+            echo "$HOME/.local/bin/dbt"
+            ;;
+        "dbt")
+            echo "dbt"
+            ;;
+        *)
+            echo "$cmd"
+            ;;
+    esac
+}
+
 # Default command
 DBT_COMMAND="dbt"
 
@@ -127,34 +149,37 @@ run_dbt_command() {
         return 1
     fi
     
-    print_status "Running $DBT_COMMAND $command for $adapter..."
+    # Resolve the actual command to use
+    local resolved_command=$(resolve_dbt_command "$DBT_COMMAND")
+    
+    print_status "Running $resolved_command $command for $adapter..."
     
     cd test_project
     
     case $command in
         "deps")
-            $DBT_COMMAND deps --profiles-dir ..
+            $resolved_command deps --profiles-dir ..
             ;;
         "parse")
-            $DBT_COMMAND parse --target $adapter --profiles-dir ..
+            $resolved_command parse --target $adapter --profiles-dir ..
             ;;
         "compile")
-            $DBT_COMMAND compile --target $adapter --profiles-dir ..
+            $resolved_command compile --target $adapter --profiles-dir ..
             ;;
         "run")
-            $DBT_COMMAND run --target $adapter --profiles-dir ..
+            $resolved_command run --target $adapter --profiles-dir ..
             ;;
         "build")
-            $DBT_COMMAND build --target $adapter --profiles-dir ..
+            $resolved_command build --target $adapter --profiles-dir ..
             ;;
         "test")
-            $DBT_COMMAND test --target $adapter --profiles-dir ..
+            $resolved_command test --target $adapter --profiles-dir ..
             ;;
         "clean")
-            $DBT_COMMAND run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
-            $DBT_COMMAND run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
-            $DBT_COMMAND run-operation query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
-            $DBT_COMMAND run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
             ;;
         *)
             print_error "Unknown command: $command"
@@ -165,9 +190,9 @@ run_dbt_command() {
     cd ..
     
     if [ $? -eq 0 ]; then
-        print_success "$DBT_COMMAND $command completed successfully for $adapter"
+        print_success "$resolved_command $command completed successfully for $adapter"
     else
-        print_error "$DBT_COMMAND $command failed for $adapter"
+        print_error "$resolved_command $command failed for $adapter"
         exit 1
     fi
 }
