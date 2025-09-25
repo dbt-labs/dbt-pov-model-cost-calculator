@@ -20,7 +20,7 @@ jobs:
         adapter: [snowflake, databricks, bigquery]
         dbt-command: [dbt, dbtf]
       fail-fast: false
-    
+     
     env:
       # Snowflake Environment Variables
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -61,7 +61,7 @@ jobs:
         run: |
           if [ "${{ matrix.dbt-command }}" = "dbtf" ]; then
             # Install dbtf - create alias for dbtf command
-            apt-get install -y curl
+            sudo apt-get install -y curl
             curl -fsSL https://public.cdn.getdbt.com/fs/install/install.sh | sh -s -- --update
             # Create dbtf alias that points to dbt
             echo '#!/bin/bash' > /usr/local/bin/dbtf
