@@ -28,7 +28,7 @@ with queries_with_metadata as (
     ) as query_metadata
   from {{ snowflake_query_history_table }} as queries
   where queries.start_time >= '{{ monitor_start_date }}'
-    and queries.database_name = '{{ tracking_database }}'
+    and queries.database_name = upper('{{ tracking_database }}')
     and queries.query_text not like '%{{ tracking_table }}%'
 )
 
