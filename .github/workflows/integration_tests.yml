@@ -62,7 +62,7 @@ jobs:
           if [ "${{ matrix.dbt-command }}" = "dbtf" ]; then
             # Install dbtf - create alias for dbtf command
             sudo apt-get install -y curl
-            curl -fsSL https://public.cdn.getdbt.com/fs/install/install.sh | sh -s -- --update
+            curl -fsSL https://public.cdn.getdbt.com/fs/install/install.sh | sh -s -- --update --version dev
             # Create dbtf alias that points to dbt
             echo '#!/bin/bash' > /usr/local/bin/dbtf
             echo 'exec dbt "$@"' >> /usr/local/bin/dbtf
