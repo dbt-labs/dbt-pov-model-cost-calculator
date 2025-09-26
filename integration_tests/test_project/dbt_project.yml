@@ -19,14 +19,6 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
-# Configure the on-run-start hook to create the tracking table
-on-run-start:
-  - "{{ dbt_model_build_reporter.create_dbt_project_models_table() }}"
-
-# Configure the on-run-end hook to log model executions
-on-run-end:
-  - "{{ dbt_model_build_reporter.record_dbt_project_models() }}"
-
 # Configure query comments to include comprehensive metadata
 query-comment: "{{ dbt_model_build_reporter.query_comment(node) }}"
 
