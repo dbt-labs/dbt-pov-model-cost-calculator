@@ -16,7 +16,3 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
-
-# Test artifacts
-test_*.sql
-temp_*.sql
