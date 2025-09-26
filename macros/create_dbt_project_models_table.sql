@@ -15,20 +15,20 @@
     {% set create_table_sql %}
       create table if not exists {{ tracking_table_fqn }} (
         model_name {{ datatypes.varchar }},
-        relation_name {{ datatypes.varchar }},
+        relation_name {{ datatypes.text }},
         model_package {{ datatypes.varchar }},
         model_type {{ datatypes.varchar }},
         status {{ datatypes.varchar }},
         execution_time {{ datatypes.float }},
-        invocation_id {{ datatypes.varchar }},
-        query_id {{ datatypes.varchar }},
+        invocation_id {{ datatypes.text }},
+        query_id {{ datatypes.text }},
         insert_timestamp {{ datatypes.timestamp }},
         dbt_cloud_run_id {{ datatypes.varchar }},
         dbt_cloud_job_id {{ datatypes.varchar }},
         dbt_cloud_project_id {{ datatypes.varchar }},
         dbt_version {{ datatypes.varchar }},
         run_started_at {{ datatypes.timestamp }},
-        node_config {{ datatypes.varchar }}
+        node_config {{ datatypes.text }}
       )
     {% endset %}
 

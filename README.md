@@ -1,6 +1,6 @@
 # dbt POV Model Cost Savings
 
-A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to dbt's fusion state-aware orchestration. 
+A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to dbt's fusion state-aware orchestration.
 
  This package tracks model execution patterns and costs to analyze the efficiency gains possible with fusion's intelligent scheduling and resource optimization.
 
@@ -10,7 +10,7 @@ A specialized dbt package designed to help dbt Labs calculate potential cost sav
 
 This package enables analysis of:
 - **Model execution patterns** and their associated costs
-- **Resource utilization** across different scheduling approaches  
+- **Resource utilization** across different scheduling approaches
 - **Potential savings** from fusion's state-aware orchestration
 - **Historical cost trends** to project fusion benefits
 
@@ -43,7 +43,7 @@ For each model execution, the plugin captures:
    ```yaml
    # Add to your existing dbt_project.yml
     query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
-   
+
    vars:
      artifact_schema: "{{ target.schema }}"
      artifact_table: "dbt_model_executions"
@@ -84,13 +84,13 @@ You can customize the plugin behavior using these variables in your `dbt_project
 vars:
   # Schema where the tracking table will be created
   artifact_schema: "{{ target.schema }}"
-  
+
   # Table name for tracking model executions
   artifact_table: "dbt_model_executions"
-  
+
   # Batch size for inserting model execution records (default: 500)
   batch_size: 500
-  
+
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "2024-01-01"
 ```
@@ -158,12 +158,12 @@ The plugin allows you to override the default system tables used for query monit
 vars:
   # BigQuery system table overrides
   bigquery_jobs_table: "my_project.region-us.INFORMATION_SCHEMA.JOBS"
-  
+
   # Databricks system table overrides
   databricks_query_history_table: "system.query.history"
   databricks_billing_usage_table: "system.billing.usage"
   databricks_billing_prices_table: "system.billing.list_prices"
-  
+
   # Snowflake system table overrides
   snowflake_query_history_table: "snowflake.account_usage.query_history"
   snowflake_query_attribution_table: "snowflake.account_usage.query_attribution_history"
@@ -213,11 +213,104 @@ The plugin includes a comprehensive query comment system that attaches JSON meta
   "package_name": "my_project",
   "relation": {
     "database": "my_database",
-    "schema": "my_schema", 
+    "schema": "my_schema",
     "identifier": "my_model"
   }
 }
 ```
+
+### Warehouse Specific Configuration
+
+#### Redshift
+
+The package supports both **Redshift Provisioned** and **Redshift Serverless** clusters with automatic cost calculation and query tracking.
+
+##### Redshift Provisioned
+
+For Redshift provisioned clusters, the package automatically detects the Redshift adapter and uses the provisioned cost model.
+
+**Required Configuration:**
+
+```yaml
+# profiles.yml
+your_profile:
+  target: prod
+  outputs:
+    prod:
+      type: redshift
+      host: your-cluster.region.redshift.amazonaws.com
+      port: 5439
+      dbname: your_database
+      schema: your_schema
+      user: your_username
+      password: your_password
+```
+
+**Recommended Variables:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # Redshift provisioned cost configuration
+  redshift_provisioned_node_price_per_hour: 0.543  # Default: RA3.large pricing
+  redshift_provisioned_node_count: 1               # Number of nodes in cluster
+```
+
+**Optional Variables:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # System table override (optional)
+  redshift_provisioned_query_history_table: "SYS_QUERY_HISTORY"
+```
+
+##### Redshift Serverless
+
+For Redshift Serverless, you **must** set the `is_serverless_redshift` variable to `true`.
+
+**Required Configuration:**
+
+```yaml
+# profiles.yml
+your_profile:
+  target: prod
+  outputs:
+    prod:
+      type: redshift
+      host: your-workgroup.region.redshift-serverless.amazonaws.com
+      port: 5439
+      dbname: your_database
+      schema: your_schema
+      user: your_username
+      password: your_password
+      # CRITICAL: This flag is required for serverless
+      is_serverless_redshift: true
+```
+
+**Or set via dbt_project.yml:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # REQUIRED: Enable serverless mode
+  is_serverless_redshift: true
+
+  # Optional serverless configuration
+  redshift_serverless_usage_price_per_hour: 0.36  # Default: US region pricing
+
+  # System table overrides (optional)
+  redshift_serverless_query_history_table: "SYS_QUERY_HISTORY"
+  redshift_serverless_usage_table: "SYS_SERVERLESS_USAGE"
+```
+
+##### Important Notes
+
+1. **Serverless Detection**: The `is_serverless_redshift` variable is **required** for serverless clusters
+2. **System Tables**: Both configurations use Redshift system tables (`SYS_QUERY_HISTORY`, `SYS_SERVERLESS_USAGE`)
+3. **Permissions**: Ensure your user has access to system tables for query history
+4. **Regional Pricing**: Update pricing variables for non-US regions
+5. **Query Filtering**: The package filters out system queries and utility commands for cleaner cost estimates
 
 ## Table Schema
 
@@ -247,7 +340,7 @@ The primary use case for this package is analyzing potential cost savings from d
 
 ```sql
 -- Analyze model execution patterns for fusion optimization
-select 
+select
   model_name,
   avg(execution_time) as avg_execution_time,
   count(*) as execution_count,
@@ -262,7 +355,7 @@ order by avg_execution_time desc;
 
 ```sql
 -- Identify models with high resource usage for fusion optimization
-select 
+select
   model_name,
   model_type,
   avg(execution_time) as avg_execution_time,
@@ -279,7 +372,7 @@ order by avg_execution_time desc;
 
 ```sql
 -- Analyze execution patterns to identify fusion optimization opportunities
-select 
+select
   date_trunc('day', run_started_at) as execution_date,
   count(*) as total_executions,
   count(distinct model_name) as unique_models,
@@ -295,12 +388,13 @@ order by execution_date desc;
 The plugin automatically creates adapter-specific models for query history analysis:
 
 - **BigQuery**: `model_queries_bigquery` - Includes bytes billed, slot usage, and cost estimates
-- **Databricks**: `model_queries_databricks` - Includes scan size, execution time, and cost estimates  
+- **Databricks**: `model_queries_databricks` - Includes scan size, execution time, and cost estimates
 - **Snowflake**: `model_queries_snowflake` - Includes credits used, warehouse info, and attribution data
+- **Redshift**: `model_queries_redshift_provisioned` and `model_queries_redshift_serverless` - Includes queries executed and estimates cost based on warehouse usage
 
 **Example - BigQuery Cost Analysis:**
 ```sql
-select 
+select
   model_name,
   sum(gb_billed) as total_gb_billed,
   sum(estimated_cost_usd) as total_cost_usd,
@@ -312,7 +406,7 @@ order by total_cost_usd desc;
 
 **Example - Snowflake Credit Usage:**
 ```sql
-select 
+select
   model_name,
   sum(credits_attributed_compute) as total_compute_credits,
   sum(credits_used_query_acceleration) as total_acceleration_credits,
@@ -335,7 +429,7 @@ This package is designed to collect the data necessary for fusion cost savings a
 
 The collected data enables analysis of:
 - **Execution patterns** that could benefit from fusion's intelligent scheduling
-- **Resource utilization** that could be optimized with state-aware orchestration  
+- **Resource utilization** that could be optimized with state-aware orchestration
 - **Cost trends** to project potential savings from fusion adoption
 
 ## Troubleshooting

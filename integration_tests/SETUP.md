@@ -41,6 +41,18 @@ BIGQUERY_KEYFILE      # Service account key file (JSON content)
 BIGQUERY_LOCATION     # Location/region (optional, defaults to 'US')
 ```
 
+#### Redshift Provisioned Secrets
+```
+REDSHIFT_PROVISIONED_USER                       # The Redshift user
+DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD    # The Redshift user's password
+```
+
+#### Redshift Serverless Secrets
+```
+REDSHIFT_SERVERLESS_USER                       # The Redshift user
+DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD    # The Redshift user's password
+```
+
 ## Local Development Setup
 
 ### Prerequisites
@@ -100,6 +112,22 @@ BIGQUERY_PROJECT=your_gcp_project_id
 BIGQUERY_DATASET=dbt_pov_model_cost_calculator_test
 DBT_ENV_SECRET_BIGQUERY_KEYFILE={"type":"service_account",...}
 BIGQUERY_LOCATION=US
+
+# Redshift Provisioned
+REDSHIFT_PROVISIONED_HOST=your-redshift-host-address
+REDSHIFT_PROVISIONED_DBNAME=your-redshift-db-name
+REDSHIFT_PROVISIONED_SCHEMA=your-redshift-schema
+REDSHIFT_PROVISIONED_ROLE=your-redshift-role
+REDSHIFT_PROVISIONED_USER=your-redshift-user
+DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD=your-redshift-password
+
+# Redshift Serverless
+REDSHIFT_SERVERLESS_HOST=your-redshift-host-address
+REDSHIFT_SERVERLESS_DBNAME=your-redshift-db-name
+REDSHIFT_SERVERLESS_SCHEMA=your-redshift-schema
+REDSHIFT_SERVERLESS_ROLE=your-redshift-role
+REDSHIFT_SERVERLESS_USER=your-redshift-user
+DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD=your-redshift-password
 ```
 
 **Important Notes:**
@@ -206,6 +234,8 @@ To clean up test artifacts:
 ./run_tests.sh snowflake clean
 ./run_tests.sh databricks clean
 ./run_tests.sh bigquery clean
+./run_tests.sh redshift_provisioned clean
+./run_tests.sh redshift_serverless clean
 ```
 
 ## Security Best Practices
