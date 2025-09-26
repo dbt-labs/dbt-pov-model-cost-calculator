@@ -3,7 +3,11 @@
 # Setup script for integration test environment variables
 # This script helps you create a .env file from the template
 
-set -e
+set -euo pipefail
+
+# Reset the current working directory to the `integration_tests` directory
+# so that how this script is called doesn't matter.
+cd "$(dirname "$0")"
 
 # Colors for output
 RED='\033[0;31m'
@@ -78,6 +82,20 @@ echo "  - BIGQUERY_PROJECT"
 echo "  - BIGQUERY_DATASET"
 echo "  - DBT_ENV_SECRET_BIGQUERY_KEYFILE"
 echo "  - BIGQUERY_LOCATION (optional)"
+echo
+echo "REDSHIFT PROVISIONED:"
+echo "  - REDSHIFT_PROVISIONED_HOST"
+echo "  - REDSHIFT_PROVISIONED_DBNAME"
+echo "  - REDSHIFT_PROVISIONED_SCHEMA"
+echo "  - REDSHIFT_PROVISIONED_USER"
+echo "  - DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD"
+echo
+echo "REDSHIFT SERVERLESS:"
+echo "  - REDSHIFT_SERVERLESS_HOST"
+echo "  - REDSHIFT_SERVERLESS_DBNAME"
+echo "  - REDSHIFT_SERVERLESS_SCHEMA"
+echo "  - REDSHIFT_SERVERLESS_USER"
+echo "  - DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD"
 echo
 
 # Ask if user wants to edit the file

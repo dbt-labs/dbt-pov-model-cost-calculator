@@ -20,7 +20,7 @@ integration_tests/
 The integration tests include several test models to validate different materialization types:
 
 - **`test_basic_model`**: Tests table materialization tracking
-- **`test_view_model`**: Tests view materialization tracking  
+- **`test_view_model`**: Tests view materialization tracking
 - **`test_incremental_model`**: Tests incremental materialization tracking
 
 ## Test Validations
@@ -37,14 +37,14 @@ The tests validate:
 
 1. Install dbt and the required adapters:
    ```bash
-   pip install dbt-core dbt-snowflake dbt-databricks dbt-bigquery
+   pip install dbt-core dbt-snowflake dbt-databricks dbt-bigquery dbt-redshift
    ```
 
 2. Set up environment variables for your target adapter:
    ```bash
    # Quick setup using the provided script
    ./setup_env.sh
-   
+
    # Or manually create .env file from template
    cp env_template.txt .env
    # Edit .env with your actual values
@@ -122,6 +122,20 @@ The GitHub Actions workflow requires the following secrets to be configured in y
 - `BIGQUERY_DATASET`
 - `BIGQUERY_KEYFILE`
 - `BIGQUERY_LOCATION` (optional, defaults to 'US')
+
+### Redshift Provisioned
+- `REDSHIFT_PROVISIONED_HOST`
+- `REDSHIFT_PROVISIONED_DBNAME`
+- `REDSHIFT_PROVISIONED_SCHEMA`
+- `REDSHIFT_PROVISIONED_ROLE`
+- `REDSHIFT_PROVISIONED_USER`
+
+### Redshift Serverless
+- `REDSHIFT_SERVERLESS_HOST`
+- `REDSHIFT_SERVERLESS_DBNAME`
+- `REDSHIFT_SERVERLESS_SCHEMA`
+- `REDSHIFT_SERVERLESS_ROLE`
+- `REDSHIFT_SERVERLESS_USER`
 
 ## Configuration
 
