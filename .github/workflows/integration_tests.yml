@@ -93,7 +93,7 @@ jobs:
 
       - name: Run dbt Build
         run: |
-          ${{ matrix.dbt-command }} build --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          ${{ matrix.dbt-command }} build --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh
 
       # - name: Verify Artifact Table
       #   run: |
