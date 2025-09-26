@@ -24,7 +24,7 @@
     {% set total_nodes = node_results|length %}
     {% set num_batches = (total_nodes / batch_size)|round(0, 'ceil')|int %}
     
-    {{ log("Processing " ~ total_nodes ~ " node executions in " ~ num_batches ~ " batches of " ~ batch_size, info=true) }}
+    {{ log("Processing " ~ total_nodes ~ "model executions in " ~ num_batches ~ " batches of " ~ batch_size, info=true) }}
     
     {%- for batch_num in range(num_batches) -%}
       {% set start_idx = batch_num * batch_size %}
