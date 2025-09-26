@@ -15,6 +15,9 @@
     {% set dbt_cloud_run_reason = env_var('DBT_CLOUD_RUN_REASON', 'none') %}
     {% set dbt_cloud_git_branch = env_var('DBT_CLOUD_GIT_BRANCH', 'none') %}
     {% set dbt_cloud_git_sha = env_var('DBT_CLOUD_GIT_SHA', 'none') %}
+    {% set dbt_version = dbt_version %}
+    {% set query_tag = target.query_tag if target.query_tag is defined else 'null' %}
+    {% set invocation_id = invocation_id %}
     
     {# Create JSON object with essential dbt platform environment variables #}
     {% set dbt_run_context = {
@@ -30,10 +33,9 @@
       'dbt_cloud_run_reason': dbt_cloud_run_reason,
       'dbt_cloud_git_branch': dbt_cloud_git_branch,
       'dbt_cloud_git_sha': dbt_cloud_git_sha,
-      'run_started_at': run_started_at,
       'invocation_id': invocation_id,
       'dbt_version': dbt_version,
-      'target_query_tag': target.query_tag if target.query_tag is defined else null
+      'target_query_tag': query_tag
     } %}
     
     {% set insert_sql %}
