@@ -1,14 +1,24 @@
 # dbt Model Build Reporter
 
-A dbt plugin that maintains an incrementally built table in your target database containing a record for every model execution. This plugin leverages the `on-run-end` hook to automatically track model executions with comprehensive metadata.
+A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to dbt's fusion state-aware orchestration. This package tracks model execution patterns and costs to analyze the efficiency gains possible with fusion's intelligent scheduling and resource optimization.
+
+> **Important**: This package is designed specifically for dbt Labs' internal analysis of fusion cost savings potential. While the community is free to use it, dbt Labs support is limited to this specific purpose. For general model cost tracking and monitoring, we recommend using community or vendor-supported packages (see [Alternative Solutions](#alternative-solutions) below).
+
+## Purpose
+
+This package enables analysis of:
+- **Model execution patterns** and their associated costs
+- **Resource utilization** across different scheduling approaches  
+- **Potential savings** from fusion's state-aware orchestration
+- **Historical cost trends** to project fusion benefits
 
 ## Features
 
 - **Automatic Model Tracking**: Captures execution details for every model in your dbt project
-- **Comprehensive Metadata**: Includes execution status, timing, row counts, and environment details
+- **Cost Analysis**: Integrates with cloud provider billing data (BigQuery, Databricks, Snowflake)
 - **dbt Cloud Integration**: Automatically captures dbt Cloud run, job, and project IDs when available
 - **Incremental Design**: Builds up historical data over time without duplicating records
-- **Flexible Configuration**: Customizable table name and schema location
+- **Fusion Analysis Ready**: Structured data optimized for fusion cost savings calculations
 
 ## What Gets Tracked
 
@@ -45,6 +55,26 @@ For each model execution, the plugin captures:
    ```bash
    dbt run
    ```
+
+## Alternative Solutions
+
+For general model cost tracking and data observability beyond fusion cost analysis, we recommend these community and vendor-supported packages:
+
+### Community Packages
+
+- **[Elementary dbt-data-reliability](https://github.com/elementary-data/dbt-data-reliability)**: Comprehensive data observability package with anomaly detection, schema monitoring, and cost tracking capabilities
+- **[select.dev packages](https://select.dev/)**: Professional data observability and cost monitoring solutions
+- **[dbt-artifacts](https://github.com/brooklyn-data/dbt_artifacts)
+
+### Why Use Alternatives?
+
+While this package is freely available, it's specifically designed for dbt Labs' fusion cost analysis. For broader data observability needs, the packages above offer:
+
+- **Dedicated support** from their respective teams
+- **Regular updates** and feature development
+- **Comprehensive documentation** and community resources
+- **Production-ready** monitoring and alerting capabilities
+- **Integration** with popular data observability platforms
 
 ## Configuration
 
@@ -213,44 +243,53 @@ The tracking table includes the following columns:
 
 ## Usage Examples
 
-### Query Recent Model Executions
+### Fusion Cost Analysis
+
+The primary use case for this package is analyzing potential cost savings from dbt's fusion state-aware orchestration:
 
 ```sql
-select 
-  model_name,
-  status,
-  execution_time,
-  insert_timestamp
-from {{ var('artifact_table', 'dbt_model_executions') }}
-order by insert_timestamp desc
-limit 10;
-```
-
-### Find Failed Models
-
-```sql
-select 
-  model_name,
-  status,
-  insert_timestamp,
-  dbt_cloud_run_id
-from {{ var('artifact_table', 'dbt_model_executions') }}
-where status = 'error'
-order by insert_timestamp desc;
-```
-
-### Performance Analysis
-
-```sql
+-- Analyze model execution patterns for fusion optimization
 select 
   model_name,
   avg(execution_time) as avg_execution_time,
-  max(execution_time) as max_execution_time,
-  count(*) as execution_count
+  count(*) as execution_count,
+  sum(case when status = 'success' then 1 else 0 end) as success_count
 from {{ var('artifact_table', 'dbt_model_executions') }}
-where status = 'success'
+where run_started_at >= current_date - interval '30 days'
 group by model_name
 order by avg_execution_time desc;
+```
+
+### Resource Utilization Analysis
+
+```sql
+-- Identify models with high resource usage for fusion optimization
+select 
+  model_name,
+  model_type,
+  avg(execution_time) as avg_execution_time,
+  count(*) as total_runs,
+  sum(case when status = 'error' then 1 else 0 end) as error_count
+from {{ var('artifact_table', 'dbt_model_executions') }}
+where status in ('success', 'error')
+group by model_name, model_type
+having count(*) > 10  -- Only models with significant execution history
+order by avg_execution_time desc;
+```
+
+### Execution Pattern Analysis
+
+```sql
+-- Analyze execution patterns to identify fusion optimization opportunities
+select 
+  date_trunc('day', run_started_at) as execution_date,
+  count(*) as total_executions,
+  count(distinct model_name) as unique_models,
+  avg(execution_time) as avg_execution_time
+from {{ var('artifact_table', 'dbt_model_executions') }}
+where run_started_at >= current_date - interval '30 days'
+group by date_trunc('day', run_started_at)
+order by execution_date desc;
 ```
 
 ### Query History and Cost Analysis
@@ -287,10 +326,19 @@ order by total_compute_credits desc;
 
 ## How It Works
 
+This package is designed to collect the data necessary for fusion cost savings analysis:
+
 1. **Hook Execution**: The `on-run-end` hook runs after all models have been executed
 2. **Table Creation**: Creates the tracking table if it doesn't exist
 3. **Data Collection**: Iterates through the `results` object to collect execution metadata
 4. **Record Insertion**: Inserts a record for each model execution with comprehensive details
+5. **Cost Integration**: Automatically integrates with cloud provider billing data for cost analysis
+6. **Fusion Analysis**: Provides structured data optimized for calculating potential fusion savings
+
+The collected data enables analysis of:
+- **Execution patterns** that could benefit from fusion's intelligent scheduling
+- **Resource utilization** that could be optimized with state-aware orchestration  
+- **Cost trends** to project potential savings from fusion adoption
 
 ## Troubleshooting
 
@@ -318,6 +366,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
+**Limited Support Scope**: This package is designed specifically for dbt Labs' fusion cost analysis. Support is limited to issues related to this specific purpose.
+
+For general questions and community support:
 - Join the [dbt Community Slack](http://community.getdbt.com/)
 - Read more on the [dbt Community Discourse](https://discourse.getdbt.com)
-- Open an issue on GitHub for bugs or feature requests
+
+For fusion cost analysis issues:
+- Open an issue on GitHub for bugs or feature requests related to fusion cost calculations
+
+For general model cost tracking and data observability:
+- Consider using [Elementary](https://github.com/elementary-data/dbt-data-reliability) or [select.dev](https://select.dev/) packages with dedicated support teams
