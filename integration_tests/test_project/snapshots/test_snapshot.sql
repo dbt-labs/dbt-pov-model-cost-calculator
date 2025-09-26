@@ -6,6 +6,7 @@
       unique_key='id',
       strategy='timestamp',
       updated_at='created_at',
+      enabled=dbt_model_build_reporter.is_adapter_type('snowflake')
     )
   }}
 

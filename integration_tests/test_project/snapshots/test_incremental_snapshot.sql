@@ -6,6 +6,7 @@
       unique_key='id',
       strategy='check',
       check_cols=['name', 'id'],
+      enabled=dbt_model_build_reporter.is_adapter_type('snowflake')
     )
   }}
 
