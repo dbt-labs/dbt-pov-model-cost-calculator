@@ -158,7 +158,7 @@ run_dbt_command() {
     
     case $command in
         "deps")
-            $resolved_command deps --profiles-dir ..
+            $resolved_command deps --target $adapter --profiles-dir ..
             ;;
         "parse")
             $resolved_command parse --target $adapter --profiles-dir ..

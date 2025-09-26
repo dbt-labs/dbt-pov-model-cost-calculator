@@ -40,7 +40,8 @@ on-run-start:
 # Configure the on-run-end hook to log model executions
 # Controlled by DBT_ENABLE_POST_HOOKS environment variable
 on-run-end:
-  - "{% if env_var('DBT_ENABLE_MBR_POST_HOOKS', 'true') | as_bool %}{{ record_dbt_project_models() }}{% endif %}"
+  - "{% if env_var('DBT_ENABLE_MBR_MODEL_POST_HOOK', 'true') | as_bool %}{{ record_dbt_project_models() }}{% endif %}"
+  - "{% if env_var('DBT_ENABLE_MBR_RUN_POST_HOOK', 'true') | as_bool %}{{ record_dbt_run_data() }}{% endif %}"
 
 # Configure query comments to include comprehensive metadata
 query-comment: "{{ dbt_model_build_reporter.query_comment(node) }}"
