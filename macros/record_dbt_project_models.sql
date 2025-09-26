@@ -13,23 +13,23 @@
   {% if execute %}
     {% set tracking_table_fqn = dbt_model_build_reporter.get_tracking_table_fqn() %}
     
-    {% set model_results = [] %}
+    {% set node_results = [] %}
     {% for result in results %}
-      {% if result.node.resource_type == 'model' and result.node.package_name != 'dbt_model_build_reporter' %}
-        {% do model_results.append(result) %}
+      {% if result.node.resource_type in ['model', 'test', 'snapshot', 'unit_test'] and result.node.package_name != 'dbt_model_build_reporter' %}
+        {% do node_results.append(result) %}
       {% endif %}
     {% endfor %}
     
     {% set batch_size = var('batch_size', 500) %}
-    {% set total_models = model_results|length %}
-    {% set num_batches = (total_models / batch_size)|round(0, 'ceil')|int %}
+    {% set total_nodes = node_results|length %}
+    {% set num_batches = (total_nodes / batch_size)|round(0, 'ceil')|int %}
     
-    {{ log("Processing " ~ total_models ~ " model executions in " ~ num_batches ~ " batches of " ~ batch_size, info=true) }}
+    {{ log("Processing " ~ total_nodes ~ " node executions in " ~ num_batches ~ " batches of " ~ batch_size, info=true) }}
     
     {%- for batch_num in range(num_batches) -%}
       {% set start_idx = batch_num * batch_size %}
-      {% set end_idx = (start_idx + batch_size, total_models)|min %}
-      {% set batch_results = model_results[start_idx:end_idx] %}
+      {% set end_idx = (start_idx + batch_size, total_nodes)|min %}
+      {% set batch_results = node_results[start_idx:end_idx] %}
       
       {%- if batch_results|length > 0 -%}
         {% set insert_timestamp = modules.datetime.datetime.utcnow().isoformat() %}
@@ -59,9 +59,9 @@
           {% for result in batch_results %}
             (
               '{{ result.node.name }}',
-              '{{ result.relation_name}}',
+              {% if result.relation_name is defined %}'{{ result.relation_name}}'{% else %}null{% endif %},
               '{{ result.node.package_name }}',
-              '{{ result.node.config.materialized }}',
+              {% if result.node.resource_type == 'model' %}'{{ result.node.config.materialized }}'{% else %}'{{ result.node.resource_type }}'{% endif %},
               '{{ result.status }}',
               {{ result.execution_time }},
               '{{ invocation_id }}',
