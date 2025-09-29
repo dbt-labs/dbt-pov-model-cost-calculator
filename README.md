@@ -46,7 +46,7 @@ For each model execution, the plugin captures:
      - "{{ record_dbt_project_models() }}"
    
   # Optional: Add comprehensive query comments
-  query-comment: "{{ dbt_model_build_reporter.query_comment(node) }}"
+  query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
    
    vars:
      artifact_schema: "{{ target.schema }}"

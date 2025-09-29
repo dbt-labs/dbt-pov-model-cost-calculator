@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_model_build_reporter.is_adapter_type('snowflake'),
+    enabled=dbt_pov_model_cost_calculator.is_adapter_type('snowflake'),
     materialized='view',
     alias='fct_dbt_model_queries'
 ) }}
@@ -58,7 +58,7 @@ select
   queries.total_elapsed_time,
   queries.execution_time as snowflake_execution_time
 
-from {{ dbt_model_build_reporter.get_tracking_table_fqn() }} as dbt
+from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
 inner join queries_with_metadata as queries
   on queries.query_metadata:dbt_cloud_job_id = dbt.dbt_cloud_job_id
   and queries.query_metadata:dbt_cloud_run_id = dbt.dbt_cloud_run_id

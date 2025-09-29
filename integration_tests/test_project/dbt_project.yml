@@ -1,4 +1,4 @@
-name: "dbt_model_build_reporter_integration_tests"
+name: "dbt_pov_model_cost_calculator_integration_tests"
 version: "0.1.0"
 config-version: 2
 
@@ -20,7 +20,7 @@ clean-targets:
   - "dbt_packages"
 
 # Configure query comments to include comprehensive metadata
-query-comment: "{{ dbt_model_build_reporter.query_comment(node) }}"
+query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
 
 # Variables for the plugin
 vars:

@@ -1,5 +1,5 @@
 # =============================================================================
-# dbt_model_build_reporter Integration Tests Environment Variables
+# dbt_pov_model_cost_calculator Integration Tests Environment Variables
 # =============================================================================
 # Copy this file to .env and fill in your actual values
 # DO NOT commit the .env file to version control
@@ -20,7 +20,7 @@ DBT_ENV_SECRET_SNOWFLAKE_PASSWORD=your_snowflake_password
 SNOWFLAKE_ROLE=your_snowflake_role
 
 # Database name for testing
-SNOWFLAKE_DATABASE=dbt_model_build_reporter_test
+SNOWFLAKE_DATABASE=dbt_pov_model_cost_calculator_test
 
 # Warehouse name for testing (use X-Small for cost efficiency)
 SNOWFLAKE_WAREHOUSE=COMPUTE_WH
@@ -50,7 +50,7 @@ DATABRICKS_SCHEMA=test_schema
 BIGQUERY_PROJECT=your_gcp_project_id
 
 # Dataset name for testing
-BIGQUERY_DATASET=dbt_model_build_reporter_test
+BIGQUERY_DATASET=dbt_pov_model_cost_calculator_test
 
 # Service account key file fields (extract from your JSON key file)
 # You can get these by:
