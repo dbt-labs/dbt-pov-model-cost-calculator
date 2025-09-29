@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_model_build_reporter.is_adapter_type('bigquery'),
+    enabled=dbt_pov_model_cost_calculator.is_adapter_type('bigquery'),
     materialized='table',
     alias='rpt_model_cost'
 ) }}

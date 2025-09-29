@@ -1,12 +1,12 @@
 {% macro create_dbt_project_models_table() %}
   {% if execute %}
-    {% set tracking_table = dbt_model_build_reporter.get_tracking_table() %}
-    {% set tracking_schema = dbt_model_build_reporter.get_tracking_schema() %}
-    {% set tracking_database = dbt_model_build_reporter.get_tracking_database() %}
-    {% set tracking_table_fqn = dbt_model_build_reporter.get_tracking_table_fqn() %}
-    {% set tracking_job_run_table_fqn = dbt_model_build_reporter.get_job_runs_tracking_table_fqn() %}
-    {% set tracking_schema_fqn = dbt_model_build_reporter.get_tracking_schema_fqn() %}
-    {% set datatypes = dbt_model_build_reporter.get_adapter_datatypes() %}
+    {% set tracking_table = dbt_pov_model_cost_calculator.get_tracking_table() %}
+    {% set tracking_schema = dbt_pov_model_cost_calculator.get_tracking_schema() %}
+    {% set tracking_database = dbt_pov_model_cost_calculator.get_tracking_database() %}
+    {% set tracking_table_fqn = dbt_pov_model_cost_calculator.get_tracking_table_fqn() %}
+    {% set tracking_job_run_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
+    {% set tracking_schema_fqn = dbt_pov_model_cost_calculator.get_tracking_schema_fqn() %}
+    {% set datatypes = dbt_pov_model_cost_calculator.get_adapter_datatypes() %}
     
     {% set create_schema_sql %}
       create schema if not exists {{ tracking_schema_fqn }};

@@ -1,6 +1,6 @@
 # Integration Test Setup Guide
 
-This guide explains how to set up the integration tests for the `dbt_model_build_reporter` package.
+This guide explains how to set up the integration tests for the `dbt_pov_model_cost_calculator` package.
 
 ## GitHub Secrets Configuration
 
@@ -85,7 +85,7 @@ SNOWFLAKE_ACCOUNT=your_snowflake_account
 SNOWFLAKE_USER=your_snowflake_username
 DBT_ENV_SECRET_SNOWFLAKE_PASSWORD=your_snowflake_password
 SNOWFLAKE_ROLE=your_snowflake_role
-SNOWFLAKE_DATABASE=dbt_model_build_reporter_test
+SNOWFLAKE_DATABASE=dbt_pov_model_cost_calculator_test
 SNOWFLAKE_WAREHOUSE=COMPUTE_WH
 SNOWFLAKE_SCHEMA=test_schema
 
@@ -97,7 +97,7 @@ DATABRICKS_SCHEMA=test_schema
 
 # BigQuery
 BIGQUERY_PROJECT=your_gcp_project_id
-BIGQUERY_DATASET=dbt_model_build_reporter_test
+BIGQUERY_DATASET=dbt_pov_model_cost_calculator_test
 DBT_ENV_SECRET_BIGQUERY_KEYFILE={"type":"service_account",...}
 BIGQUERY_LOCATION=US
 ```
@@ -156,29 +156,29 @@ BIGQUERY_LOCATION=US
 
 1. Create a test catalog and schema:
    ```sql
-   CREATE CATALOG IF NOT EXISTS dbt_model_build_reporter_test;
-   CREATE SCHEMA IF NOT EXISTS dbt_model_build_reporter_test.test_schema;
+   CREATE CATALOG IF NOT EXISTS dbt_pov_model_cost_calculator_test;
+   CREATE SCHEMA IF NOT EXISTS dbt_pov_model_cost_calculator_test.test_schema;
    ```
 
 2. Grant permissions:
    ```sql
-   GRANT USE CATALOG ON CATALOG dbt_model_build_reporter_test TO `your_user@domain.com`;
-   GRANT USE SCHEMA ON SCHEMA dbt_model_build_reporter_test.test_schema TO `your_user@domain.com`;
-   GRANT CREATE TABLE ON SCHEMA dbt_model_build_reporter_test.test_schema TO `your_user@domain.com`;
+   GRANT USE CATALOG ON CATALOG dbt_pov_model_cost_calculator_test TO `your_user@domain.com`;
+   GRANT USE SCHEMA ON SCHEMA dbt_pov_model_cost_calculator_test.test_schema TO `your_user@domain.com`;
+   GRANT CREATE TABLE ON SCHEMA dbt_pov_model_cost_calculator_test.test_schema TO `your_user@domain.com`;
    ```
 
 ### BigQuery Setup
 
 1. Create a test dataset:
    ```bash
-   bq mk --dataset your_project_id:dbt_model_build_reporter_test
+   bq mk --dataset your_project_id:dbt_pov_model_cost_calculator_test
    ```
 
 2. Grant necessary permissions:
    ```bash
    bq update --source_format=NEWLINE_DELIMITED_JSON \
      --project_id=your_project_id \
-     --dataset_id=dbt_model_build_reporter_test \
+     --dataset_id=dbt_pov_model_cost_calculator_test \
      --access_file=access.json
    ```
 

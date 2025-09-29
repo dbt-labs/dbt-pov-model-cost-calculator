@@ -11,11 +11,11 @@
 
 {% macro record_dbt_project_models() %}
   {% if execute %}
-    {% set tracking_table_fqn = dbt_model_build_reporter.get_tracking_table_fqn() %}
+    {% set tracking_table_fqn = dbt_pov_model_cost_calculator.get_tracking_table_fqn() %}
     
     {% set node_results = [] %}
     {% for result in results %}
-      {% if result.node.resource_type in ['model', 'test', 'snapshot', 'unit_test'] and result.node.package_name != 'dbt_model_build_reporter' %}
+      {% if result.node.resource_type in ['model', 'test', 'snapshot', 'unit_test'] and result.node.package_name != 'dbt_pov_model_cost_calculator' %}
         {% do node_results.append(result) %}
       {% endif %}
     {% endfor %}
@@ -72,7 +72,7 @@
               {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
               '{{ dbt_version }}',
               '{{ run_started_at }}',
-              '{{ dbt_model_build_reporter._extract_node_config(result.node) }}'
+              '{{ dbt_pov_model_cost_calculator._extract_node_config(result.node) }}'
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}

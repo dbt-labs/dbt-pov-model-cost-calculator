@@ -1,6 +1,6 @@
 name: Integration Tests
 
-# This workflow tests the dbt_model_build_reporter package against:
+# This workflow tests the dbt_pov_model_cost_calculator package against:
 # - 3 adapters: snowflake, databricks, bigquery
 # - 2 dbt commands: dbt, dbtf
 # Total: 6 test combinations (3 adapters × 2 commands)

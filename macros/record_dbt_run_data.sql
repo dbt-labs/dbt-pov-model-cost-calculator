@@ -1,6 +1,6 @@
 {% macro record_dbt_run_data() %}
   {% if execute %}
-    {% set tracking_job_runs_table_fqn = dbt_model_build_reporter.get_job_runs_tracking_table_fqn() %}
+    {% set tracking_job_runs_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
     
     {# Collect essential dbt Cloud environment variables #}
     {% set dbt_cloud_run_id = env_var('DBT_CLOUD_RUN_ID', 'none') %}
@@ -50,7 +50,7 @@
         {% if dbt_cloud_job_id != 'none' %}'{{ dbt_cloud_job_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_environment_id != 'none' %}'{{ dbt_cloud_environment_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
-        {{ dbt_model_build_reporter.type_json_insert(tojson(dbt_run_context)) }}
+        {{ dbt_pov_model_cost_calculator.type_json_insert(tojson(dbt_run_context)) }}
       
     {% endset %}
     
