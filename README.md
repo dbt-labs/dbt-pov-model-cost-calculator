@@ -1,4 +1,4 @@
-# dbt Cost Savings POV
+# dbt POV Model Cost Savings
 
 A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to dbt's fusion state-aware orchestration. 
 
