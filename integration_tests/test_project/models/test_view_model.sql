@@ -4,8 +4,7 @@
 ) }}
 
 -- Test view model to validate view materialization tracking
-select 
+select
     2 as id,
     'test_view' as name,
     current_timestamp as created_at
-

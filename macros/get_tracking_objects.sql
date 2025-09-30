@@ -21,7 +21,7 @@
 {% macro get_tracking_schema_fqn() %}
   {% set tracking_database = dbt_pov_model_cost_calculator.get_tracking_database() %}
   {% set tracking_schema = dbt_pov_model_cost_calculator.get_tracking_schema() %}
-  
+
   {{ return(adapter.quote_as_configured(tracking_database, 'database') ~ '.' ~ adapter.quote_as_configured(tracking_schema, 'schema')) }}
 {% endmacro %}
 
@@ -29,7 +29,7 @@
   {% set tracking_database = dbt_pov_model_cost_calculator.get_tracking_database() %}
   {% set tracking_schema = dbt_pov_model_cost_calculator.get_tracking_schema() %}
   {% set tracking_table = dbt_pov_model_cost_calculator.get_tracking_table() %}
-  
+
   {{ return(adapter.quote_as_configured(tracking_database, 'database') ~ '.' ~ adapter.quote_as_configured(tracking_schema, 'schema') ~ '.' ~ adapter.quote_as_configured(tracking_table, 'identifier')) }}
 {% endmacro %}
 
@@ -37,6 +37,6 @@
   {% set tracking_database = dbt_pov_model_cost_calculator.get_tracking_database() %}
   {% set tracking_schema = dbt_pov_model_cost_calculator.get_tracking_schema() %}
   {% set tracking_job_runs_table = dbt_pov_model_cost_calculator.get_job_runs_tracking_table() %}
-  
+
   {{ return(adapter.quote_as_configured(tracking_database, 'database') ~ '.' ~ adapter.quote_as_configured(tracking_schema, 'schema') ~ '.' ~ adapter.quote_as_configured(tracking_job_runs_table, 'identifier')) }}
 {% endmacro %}

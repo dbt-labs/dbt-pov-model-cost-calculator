@@ -6,7 +6,7 @@
     'integer': dbt.type_int(),
     'json': dbt_pov_model_cost_calculator.type_json(),
   } %}
-  
+
   {{ return(datatypes) }}
 {% endmacro %}
 

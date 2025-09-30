@@ -7,11 +7,11 @@
     {% set tracking_job_run_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
     {% set tracking_schema_fqn = dbt_pov_model_cost_calculator.get_tracking_schema_fqn() %}
     {% set datatypes = dbt_pov_model_cost_calculator.get_adapter_datatypes() %}
-    
+
     {% set create_schema_sql %}
       create schema if not exists {{ tracking_schema_fqn }};
     {% endset %}
-    
+
     {% set create_table_sql %}
       create table if not exists {{ tracking_table_fqn }} (
         model_name {{ datatypes.varchar }},
@@ -31,7 +31,7 @@
         node_config {{ datatypes.varchar }}
       )
     {% endset %}
-    
+
     {% set create_job_run_table_sql %}
       create table if not exists {{ tracking_job_run_table_fqn }} (
         dbt_cloud_run_id {{ datatypes.varchar }},
