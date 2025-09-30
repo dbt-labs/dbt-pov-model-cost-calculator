@@ -50,6 +50,7 @@ select
 
   -- Cost information
   queries.credits_used_cloud_services,
+  queries.credits_used_cloud_services  * {{ snowflake_credit_rate }} as cloud_services_cost,
   queries.bytes_scanned / (1024*1024*1024) as gb_scanned,
   query_attr.credits_attributed_compute,
   query_attr.credits_attributed_compute * {{ snowflake_credit_rate }} as attributed_compute_cost,
