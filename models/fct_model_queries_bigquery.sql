@@ -11,7 +11,7 @@
 {% set bigquery_jobs_table = var('bigquery_jobs_table') %}
 
 with jobs_with_metadata as (
-  select 
+  select
     jobs.job_id,
     jobs.total_bytes_billed,
     jobs.total_slot_ms,
@@ -44,7 +44,7 @@ with jobs_with_metadata as (
     and jobs.project_id = '{{ tracking_database }}'
 )
 
-select 
+select
   jobs.job_id as query_id,
   dbt.run_started_at,
   dbt.model_name,
@@ -55,7 +55,7 @@ select
   dbt.status,
   dbt.invocation_id,
   dbt.dbt_version,
- 
+
   -- Cost information
   jobs.reservation_id,
   jobs.total_slot_ms / 1000 / 60 as slot_minutes,

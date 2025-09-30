@@ -13,7 +13,7 @@
 {% set databricks_billing_prices_table = var('databricks_billing_prices_table', 'system.billing.list_prices') %}
 
 with query_with_compute as (
-  select 
+  select
     qh.statement_id,
     qh.executed_by,
     qh.client_application,
@@ -55,7 +55,7 @@ with query_with_compute as (
 
 -- Calculate total query execution time per billing period per compute resource
 total_query_time_per_billing_period as (
-  select 
+  select
     bu.record_id,
     bu.workspace_id,
     coalesce(bu.usage_metadata.cluster_id, bu.usage_metadata.warehouse_id) as compute_resource_id,
@@ -67,10 +67,10 @@ total_query_time_per_billing_period as (
     -- Sum of query execution time that actually overlaps with this billing period
     sum(
       greatest(
-        timestampdiff(second, 
+        timestampdiff(second,
           greatest(qwc.start_time, bu.usage_start_time),  -- Later of query start or billing start
           least(qwc.end_time, bu.usage_end_time)         -- Earlier of query end or billing end
-        ), 
+        ),
         0
       )
     ) as total_query_execution_seconds
@@ -78,7 +78,7 @@ total_query_time_per_billing_period as (
   left join query_with_compute qwc on bu.workspace_id = qwc.workspace_id
     and coalesce(bu.usage_metadata.cluster_id, bu.usage_metadata.warehouse_id) = coalesce(qwc.cluster_id, qwc.warehouse_id)
     -- Query overlaps with billing period (any overlap, not just fully contained)
-    and qwc.start_time < bu.usage_end_time 
+    and qwc.start_time < bu.usage_end_time
     and qwc.end_time > bu.usage_start_time
   where bu.usage_start_time >= '{{ monitor_start_date }}'
   group by bu.record_id, bu.workspace_id, compute_resource_id, bu.usage_start_time, bu.usage_end_time, bu.usage_quantity, bu.sku_name, bu.billing_origin_product
@@ -86,18 +86,18 @@ total_query_time_per_billing_period as (
 
 -- Calculate proportional DBU allocation per query
 query_dbu_allocation as (
-  select 
+  select
     qwc.statement_id,
     tqt.sku_name,
     -- Proportional DBU allocation: (total_dbus * this_query_overlap_time / total_query_time_in_period)
-    case 
+    case
       when tqt.total_query_execution_seconds > 0 then
-        tqt.usage_quantity * 
+        tqt.usage_quantity *
         greatest(
-          timestampdiff(second, 
+          timestampdiff(second,
             greatest(qwc.start_time, tqt.usage_start_time),  -- Later of query start or billing start
             least(qwc.end_time, tqt.usage_end_time)         -- Earlier of query end or billing end
-          ), 
+          ),
           0
         ) / tqt.total_query_execution_seconds
       else 0
@@ -106,13 +106,13 @@ query_dbu_allocation as (
   left join total_query_time_per_billing_period tqt on qwc.workspace_id = tqt.workspace_id
     and coalesce(qwc.cluster_id, qwc.warehouse_id) = tqt.compute_resource_id
     -- Query overlaps with billing period
-    and qwc.start_time < tqt.usage_end_time 
+    and qwc.start_time < tqt.usage_end_time
     and qwc.end_time > tqt.usage_start_time
 ),
 
 -- Convert allocated DBUs to USD
 query_costs as (
-  select 
+  select
     qda.statement_id,
     qda.dbus_consumed,
     lp.pricing.effective_list.default as dbu_unit_price,
@@ -124,8 +124,8 @@ query_costs as (
     and (lp.price_end_time is null or current_date() < date(lp.price_end_time))
 )
 
-select 
-  
+select
+
   qwc.statement_id as query_id,
   dbt.run_started_at,
   dbt.model_name,
@@ -136,19 +136,19 @@ select
   dbt.status,
   dbt.invocation_id,
   dbt.dbt_version,
-  
+
   -- Compute information
   qwc.compute_type,
   qwc.cluster_id,
   qwc.warehouse_id,
   qwc.workspace_id,
-  
+
   -- Cost information
   qc.dbus_consumed,
   qc.dbu_unit_price,
   qc.sku_name,
   qc.estimated_cost_usd,
-  
+
   -- Query metrics
   qwc.execution_duration_ms,
   qwc.execution_seconds,
@@ -159,16 +159,16 @@ select
   qwc.written_bytes,
   qwc.read_bytes / (1024*1024*1024) as gb_read,
   qwc.written_bytes / (1024*1024*1024) as gb_written,
-  
+
   -- Cost efficiency metrics
-  case 
-    when qwc.produced_rows > 0 
+  case
+    when qwc.produced_rows > 0
     then qc.estimated_cost_usd / qwc.produced_rows
     else null
   end as cost_per_row_produced,
-  
-  case 
-    when qwc.written_bytes > 0 
+
+  case
+    when qwc.written_bytes > 0
     then qc.estimated_cost_usd / (qwc.written_bytes / 1024.0 / 1024.0)
     else null
   end as cost_per_mb_written

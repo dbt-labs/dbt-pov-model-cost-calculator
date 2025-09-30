@@ -104,7 +104,7 @@ print_error() {
 validate_env_vars() {
     local adapter=$1
     local missing_vars=()
-    
+
     case $adapter in
         "snowflake")
             required_vars=("SNOWFLAKE_ACCOUNT" "SNOWFLAKE_USER" "DBT_ENV_SECRET_SNOWFLAKE_PASSWORD" "SNOWFLAKE_ROLE" "SNOWFLAKE_DATABASE" "SNOWFLAKE_WAREHOUSE" "SNOWFLAKE_SCHEMA")
@@ -119,13 +119,13 @@ validate_env_vars() {
             return 0  # Skip validation for 'all' or unknown adapters
             ;;
     esac
-    
+
     for var in "${required_vars[@]}"; do
         if [ -z "${!var}" ]; then
             missing_vars+=("$var")
         fi
     done
-    
+
     if [ ${#missing_vars[@]} -ne 0 ]; then
         print_error "Missing required environment variables for $adapter:"
         for var in "${missing_vars[@]}"; do
@@ -135,7 +135,7 @@ validate_env_vars() {
         print_status "Please check your .env file and ensure all required variables are set."
         return 1
     fi
-    
+
     return 0
 }
 
@@ -143,19 +143,19 @@ validate_env_vars() {
 run_dbt_command() {
     local adapter=$1
     local command=$2
-    
+
     # Validate environment variables for the adapter
     if ! validate_env_vars $adapter; then
         return 1
     fi
-    
+
     # Resolve the actual command to use
     local resolved_command=$(resolve_dbt_command "$DBT_COMMAND")
-    
+
     print_status "Running $resolved_command $command for $adapter..."
-    
+
     cd test_project
-    
+
     case $command in
         "deps")
             $resolved_command deps --target $adapter --profiles-dir ..
@@ -186,9 +186,9 @@ run_dbt_command() {
             exit 1
             ;;
     esac
-    
+
     cd ..
-    
+
     if [ $? -eq 0 ]; then
         print_success "$resolved_command $command completed successfully for $adapter"
     else
@@ -200,14 +200,14 @@ run_dbt_command() {
 # Function to run full test suite for an adapter
 run_full_test() {
     local adapter=$1
-    
+
     print_status "Running full test suite for $adapter..."
-    
+
     run_dbt_command $adapter "deps"
     run_dbt_command $adapter "parse"
     run_dbt_command $adapter "compile"
     run_dbt_command $adapter "run"
-    
+
     print_success "Full test suite completed for $adapter"
 }
 

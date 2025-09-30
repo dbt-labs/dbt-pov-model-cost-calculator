@@ -20,7 +20,7 @@ jobs:
         adapter: [snowflake, databricks, bigquery]
         dbt-command: [dbt, dbtf]
       fail-fast: false
-     
+
     env:
       # Snowflake Environment Variables
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -30,14 +30,14 @@ jobs:
       SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
       SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
       SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
-      
+
       # Databricks Environment Variables
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
       DBT_ENV_SECRET_DATABRICKS_TOKEN: ${{ secrets.DBT_ENV_SECRET_DATABRICKS_TOKEN }}
       DATABRICKS_CATALOG: ${{ secrets.DATABRICKS_CATALOG }}
       DATABRICKS_SCHEMA: ${{ secrets.DATABRICKS_SCHEMA }}
-      
+
       # BigQuery Environment Variables
       BIGQUERY_PROJECT: ${{ secrets.BIGQUERY_PROJECT }}
       BIGQUERY_DATASET: ${{ secrets.BIGQUERY_DATASET }}
@@ -47,7 +47,7 @@ jobs:
       BIGQUERY_CLIENT_ID: ${{ secrets.BIGQUERY_CLIENT_ID }}
       BIGQUERY_CLIENT_X509_CERT_URL: ${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}
       BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4

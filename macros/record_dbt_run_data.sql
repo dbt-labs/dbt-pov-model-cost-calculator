@@ -1,7 +1,7 @@
 {% macro record_dbt_run_data() %}
   {% if execute %}
     {% set tracking_job_runs_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
-    
+
     {# Collect essential dbt Cloud environment variables #}
     {% set dbt_cloud_run_id = env_var('DBT_CLOUD_RUN_ID', 'none') %}
     {% set dbt_cloud_job_id = env_var('DBT_CLOUD_JOB_ID', 'none') %}
@@ -18,7 +18,7 @@
     {% set dbt_version = dbt_version %}
     {% set query_tag = target.query_tag if target.query_tag is defined else 'null' %}
     {% set invocation_id = invocation_id %}
-    
+
     {# Create JSON object with essential dbt platform environment variables #}
     {% set dbt_run_context = {
       'dbt_cloud_run_id': dbt_cloud_run_id,
@@ -37,7 +37,7 @@
       'dbt_version': dbt_version,
       'target_query_tag': query_tag
     } %}
-    
+
     {% set insert_sql %}
       insert into {{ tracking_job_runs_table_fqn }} (
         dbt_cloud_run_id,
@@ -45,15 +45,15 @@
         dbt_cloud_environment_id,
         dbt_cloud_project_id,
         dbt_run_context
-      ) select 
+      ) select
         {% if dbt_cloud_run_id != 'none' %}'{{ dbt_cloud_run_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_job_id != 'none' %}'{{ dbt_cloud_job_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_environment_id != 'none' %}'{{ dbt_cloud_environment_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
         {{ dbt_pov_model_cost_calculator.type_json_insert(tojson(dbt_run_context)) }}
-      
+
     {% endset %}
-    
+
     {{ log("Recording dbt run data for run_id: " ~ dbt_cloud_run_id, info=true) }}
     {% do run_query(insert_sql) %}
     {{ log("Successfully recorded dbt run data", info=true) }}

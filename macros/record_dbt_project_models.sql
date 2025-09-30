@@ -12,25 +12,25 @@
 {% macro record_dbt_project_models() %}
   {% if execute %}
     {% set tracking_table_fqn = dbt_pov_model_cost_calculator.get_tracking_table_fqn() %}
-    
+
     {% set node_results = [] %}
     {% for result in results %}
       {% if result.node.resource_type in ['model', 'test', 'snapshot', 'unit_test'] and result.node.package_name != 'dbt_pov_model_cost_calculator' %}
         {% do node_results.append(result) %}
       {% endif %}
     {% endfor %}
-    
+
     {% set batch_size = var('batch_size', 500) %}
     {% set total_nodes = node_results|length %}
     {% set num_batches = (total_nodes / batch_size)|round(0, 'ceil')|int %}
-    
+
     {{ log("Processing " ~ total_nodes ~ "model executions in " ~ num_batches ~ " batches of " ~ batch_size, info=true) }}
-    
+
     {%- for batch_num in range(num_batches) -%}
       {% set start_idx = batch_num * batch_size %}
       {% set end_idx = (start_idx + batch_size, total_nodes)|min %}
       {% set batch_results = node_results[start_idx:end_idx] %}
-      
+
       {%- if batch_results|length > 0 -%}
         {% set insert_timestamp = modules.datetime.datetime.utcnow().isoformat() %}
         {% set dbt_cloud_run_id = env_var('DBT_CLOUD_RUN_ID', 'none') %}
@@ -76,12 +76,12 @@
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
-        
+
         {{ log("Inserting batch " ~ (batch_num + 1) ~ "/" ~ num_batches ~ " with " ~ batch_results|length ~ " records", info=true) }}
         {% do run_query(batch_insert_sql) %}
       {%- endif -%}
     {%- endfor -%}
-    
+
     {{ log("Successfully logged " ~ total_models ~ " model executions in " ~ num_batches ~ " batches", info=true) }}
   {% endif %}
 {% endmacro %}

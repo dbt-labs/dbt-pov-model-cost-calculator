@@ -12,7 +12,7 @@
 {% set snowflake_query_attribution_table = var('snowflake_query_attribution_table', 'snowflake.account_usage.query_attribution_history') %}
 {% set snowflake_credit_rate = var('snowflake_credit_rate', 3) %}
 with queries_with_metadata as (
-  select 
+  select
       queries.query_id,
       queries.query_text,
       queries.credits_used_cloud_services,
@@ -32,7 +32,7 @@ with queries_with_metadata as (
     and queries.query_text not like '%{{ tracking_table }}%'
 )
 
-select 
+select
   queries.query_id,
   dbt.run_started_at,
   dbt.model_name,
