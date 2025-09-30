@@ -1,6 +1,6 @@
 # Integration Tests
 
-This directory contains integration tests for the `dbt_model_build_reporter` package to ensure it works correctly across different data warehouse adapters.
+This directory contains integration tests for the `dbt_pov_model_cost_calculator` package to ensure it works correctly across different data warehouse adapters.
 
 ## Structure
 

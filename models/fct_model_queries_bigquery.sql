@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_model_build_reporter.is_adapter_type('bigquery'),
+    enabled=dbt_pov_model_cost_calculator.is_adapter_type('bigquery'),
     materialized='view',
     alias='fct_dbt_model_queries'
 ) }}
@@ -70,7 +70,7 @@ select
   jobs.start_time as query_start_time,
   jobs.end_time as query_end_time,
 
-from {{ dbt_model_build_reporter.get_tracking_table_fqn() }} as dbt
+from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
 
 inner join jobs_with_metadata as jobs
    on jobs.extracted_dbt_cloud_run_id = dbt.dbt_cloud_run_id

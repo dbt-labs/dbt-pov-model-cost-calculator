@@ -4,7 +4,7 @@
     'float': dbt.type_float(),
     'timestamp': dbt.type_timestamp(),
     'integer': dbt.type_int(),
-    'json': dbt_model_build_reporter.type_json(),
+    'json': dbt_pov_model_cost_calculator.type_json(),
   } %}
   
   {{ return(datatypes) }}

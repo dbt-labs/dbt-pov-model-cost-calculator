@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Integration Test Runner for dbt_model_build_reporter
+# Integration Test Runner for dbt_pov_model_cost_calculator
 # Usage: ./run_tests.sh [-c command] [adapter] [test_command]
 # Options:
 #   -c command    Choose between 'dbt' or 'dbtf' (default: dbt)
