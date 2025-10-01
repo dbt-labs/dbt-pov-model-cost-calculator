@@ -17,7 +17,7 @@
     {% set dbt_cloud_git_sha = env_var('DBT_CLOUD_GIT_SHA', 'none') %}
     {% set dbt_version = dbt_version %}
     {% set query_tag = target.query_tag if target.query_tag is defined else 'null' %}
-    {% set invocation_args=args %}
+    {% set invocation_args=invocation_args_dict %}
     {% set invocation_id = invocation_id %}
 
     {# Create JSON object with essential dbt platform environment variables #}
