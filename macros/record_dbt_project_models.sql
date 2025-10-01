@@ -76,7 +76,7 @@
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
-        {{ log("Inserting batch sql:" ~ batch_insert_sql, debug=true) }}
+        {{ log("Inserting batch sql:" ~ batch_insert_sql, info=true) }}
         {{ log("Inserting batch " ~ (batch_num + 1) ~ "/" ~ num_batches ~ " with " ~ batch_results|length ~ " records", info=true) }}
         {% do run_query(batch_insert_sql) %}
       {%- endif -%}
