@@ -61,8 +61,6 @@ fi
 
 # Enable automatic export of variables
 set -o allexport
-export DBT_CLOUD_RUN_ID="$(date +%s)"
-export DBT_CLOUD_JOB_ID="integration_test_run"
 # Source the .env file
 source .env
 

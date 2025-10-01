@@ -3,8 +3,8 @@
     {% set tracking_job_runs_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
 
     {# Collect essential dbt Cloud environment variables #}
-    {% set dbt_cloud_run_id = env_var('DBT_CLOUD_RUN_ID', 'none') %}
-    {% set dbt_cloud_job_id = env_var('DBT_CLOUD_JOB_ID', 'none') %}
+    {% set dbt_cloud_run_id = dbt_pov_model_cost_calculator.get_dbt_cloud_run_id() %}
+    {% set dbt_cloud_job_id = dbt_pov_model_cost_calculator.get_dbt_cloud_job_id() %}
     {% set dbt_cloud_project_id = env_var('DBT_CLOUD_PROJECT_ID', 'none') %}
     {% set dbt_cloud_environment_id = env_var('DBT_CLOUD_ENVIRONMENT_ID', 'none') %}
     {% set dbt_cloud_account_id = env_var('DBT_CLOUD_ACCOUNT_ID', 'none') %}
@@ -17,6 +17,7 @@
     {% set dbt_cloud_git_sha = env_var('DBT_CLOUD_GIT_SHA', 'none') %}
     {% set dbt_version = dbt_version %}
     {% set query_tag = target.query_tag if target.query_tag is defined else 'null' %}
+    {% set invocation_args=invocation_args_dict %}
     {% set invocation_id = invocation_id %}
 
     {# Create JSON object with essential dbt platform environment variables #}
@@ -35,7 +36,8 @@
       'dbt_cloud_git_sha': dbt_cloud_git_sha,
       'invocation_id': invocation_id,
       'dbt_version': dbt_version,
-      'target_query_tag': query_tag
+      'target_query_tag': query_tag,
+      'invocation_args': invocation_args
     } %}
 
     {% set insert_sql %}
@@ -46,8 +48,8 @@
         dbt_cloud_project_id,
         dbt_run_context
       ) select
-        {% if dbt_cloud_run_id != 'none' %}'{{ dbt_cloud_run_id }}'{% else %}null{% endif %},
-        {% if dbt_cloud_job_id != 'none' %}'{{ dbt_cloud_job_id }}'{% else %}null{% endif %},
+        '{{ dbt_cloud_run_id }}',
+        '{{ dbt_cloud_job_id }}',
         {% if dbt_cloud_environment_id != 'none' %}'{{ dbt_cloud_environment_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
         {{ dbt_pov_model_cost_calculator.type_json_insert(tojson(dbt_run_context)) }}

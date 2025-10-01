@@ -135,3 +135,6 @@ logs/
 profiles.yml
 .env
 dbt_internal_packages/
+
+# vscode
+*.user.yml
