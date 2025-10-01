@@ -39,14 +39,10 @@ For each model execution, the plugin captures:
 
 1. Update packages.yml
 
-2. **Configure your dbt_project.yml**:
+2. **Add query comment macro in dbt_project.yml**:
    ```yaml
    # Add to your existing dbt_project.yml
-   on-run-end:
-     - "{{ record_dbt_project_models() }}"
-   
-  # Optional: Add comprehensive query comments
-  query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
+    query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
    
    vars:
      artifact_schema: "{{ target.schema }}"
