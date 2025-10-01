@@ -39,8 +39,8 @@
 
       {%- if batch_results|length > 0 -%}
         {% set insert_timestamp = modules.datetime.datetime.utcnow().isoformat() %}
-        {% set dbt_cloud_run_id = env_var('DBT_CLOUD_RUN_ID', 'none') %}
-        {% set dbt_cloud_job_id = env_var('DBT_CLOUD_JOB_ID', 'none') %}
+        {% set dbt_cloud_run_id = dbt_pov_model_cost_calculator.get_dbt_cloud_run_id() %}
+        {% set dbt_cloud_job_id = dbt_pov_model_cost_calculator.get_dbt_cloud_job_id() %}
         {% set dbt_cloud_project_id = env_var('DBT_CLOUD_PROJECT_ID', 'none') %}
         {% set dbt_version = dbt_version %}
         {% set run_started_at = run_started_at %}
@@ -73,8 +73,8 @@
               '{{ invocation_id }}',
               {% if result.adapter_response.query_id is defined %}'{{ result.adapter_response.query_id }}'{% else %}'none'{% endif %},
               '{{ insert_timestamp }}',
-              {% if dbt_cloud_run_id != 'none' %}'{{ dbt_cloud_run_id }}'{% else %}null{% endif %},
-              {% if dbt_cloud_job_id != 'none' %}'{{ dbt_cloud_job_id }}'{% else %}null{% endif %},
+              '{{ dbt_cloud_run_id }}',
+              '{{ dbt_cloud_job_id }}',
               {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
               '{{ dbt_version }}',
               '{{ run_started_at }}',

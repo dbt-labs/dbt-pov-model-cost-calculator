@@ -12,6 +12,7 @@ logs/
 .idea/
 *.swp
 *.swo
+.user.yml
 
 # OS files
 .DS_Store
