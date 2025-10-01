@@ -1,6 +1,6 @@
 {% macro _extract_node_config(node) %}
   {% if node.config is mapping %}
-      {% set node_config = node.config | tojson  %}
+      {% set node_config = tojson(node.config)  %}
   {% elif node.config.to_dict is defined %}
     {% set node_config = node.config.to_dict() | tojson %}
   {% else %}
@@ -22,7 +22,7 @@
 
     {% set batch_size = var('batch_size', 500) %}
     {% set total_nodes = node_results|length %}
-    {% set num_batches = (total_nodes / batch_size)|round(0, 'ceil')|int %}
+    {% set num_batches = (total_nodes / batch_size)|round(0, 'ceil') | int %}
 
     {{ log("Processing " ~ total_nodes ~ "model executions in " ~ num_batches ~ " batches of " ~ batch_size, info=true) }}
 
@@ -76,7 +76,9 @@
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
-        {{ log("Inserting batch sql:" ~ batch_insert_sql, info=true) }}
+        {%- if env_var('DBT_MBR_LOG_BATCH_INSERT') -%}
+          {{ log("Inserting batch sql:" ~ batch_insert_sql, info=true) }}
+        {%- endif -%}
         {{ log("Inserting batch " ~ (batch_num + 1) ~ "/" ~ num_batches ~ " with " ~ batch_results|length ~ " records", info=true) }}
         {% do run_query(batch_insert_sql) %}
       {%- endif -%}
