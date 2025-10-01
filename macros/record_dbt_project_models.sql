@@ -76,7 +76,7 @@
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
-        {%- if env_var('DBT_MBR_LOG_BATCH_INSERT') -%}
+        {%- if env_var('DBT_MBR_LOG_BATCH_INSERT', false) -%}
           {{ log("Inserting batch sql:" ~ batch_insert_sql, info=true) }}
         {%- endif -%}
         {{ log("Inserting batch " ~ (batch_num + 1) ~ "/" ~ num_batches ~ " with " ~ batch_results|length ~ " records", info=true) }}
