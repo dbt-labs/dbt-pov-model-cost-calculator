@@ -40,23 +40,23 @@ For each model execution, the plugin captures:
 1. Update packages.yml
 
 2. **Configure your dbt_project.yml**:
-   ```yaml
-   # Add to your existing dbt_project.yml
-   on-run-end:
-     - "{{ record_dbt_project_models() }}"
-   
-  # Optional: Add comprehensive query comments
-  query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
-   
-   vars:
-     artifact_schema: "{{ target.schema }}"
-     artifact_table: "dbt_model_executions"
-   ```
+```yaml
+ # Add to your existing dbt_project.yml
+ on-run-end:
+   - "{{ dbt_pov_model_cost_calculator.record_dbt_project_models() }}"
+ 
+# Optional: Add comprehensive query comments
+query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
+ 
+ vars:
+   artifact_schema: "{{ target.schema }}"
+   artifact_table: "dbt_model_executions"
+```
 
 3. **Run your first dbt command**:
-   ```bash
-   dbt run
-   ```
+```bash
+dbt run
+```
 
 ## Alternative Solutions
 
