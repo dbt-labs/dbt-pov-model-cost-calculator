@@ -19,21 +19,33 @@ This package enables analysis of:
 - **Automatic Model Tracking**: Captures execution details for every model in your dbt project
 - **Cost Analysis**: Integrates with cloud provider billing data (BigQuery, Databricks, Snowflake)
 - **dbt Cloud Integration**: Automatically captures dbt Cloud run, job, and project IDs when available
+- **Platform Job Tracking**: Records comprehensive dbt Cloud platform metadata for each run
+- **Fusion Savings Analysis**: Calculates potential cost savings from state-aware orchestration (SAO)
 - **Incremental Design**: Builds up historical data over time without duplicating records
 - **Fusion Analysis Ready**: Structured data optimized for fusion cost savings calculations
 
 ## What Gets Tracked
 
+### Model Executions
 For each model execution, the plugin captures:
 
 - **Model Details**: Name, package, materialization type
-- **Execution Status**: Success, error, or skipped
+- **Execution Status**: Success, error, skipped, or reused
 - **Performance Metrics**: Execution time
 - **Environment Info**: dbt version
 - **Timestamps**: Record insertion time and run start time
 - **dbt Cloud Data**: Run ID, job ID, project ID (when available)
 - **Run Context**: Invocation ID and query ID (adapter-specific)
 - **Query Comments**: Comprehensive JSON metadata attached to all SQL queries
+
+### Platform Job Runs
+For each dbt run, the plugin also captures comprehensive platform metadata:
+
+- **dbt Cloud Identifiers**: Run ID, job ID, project ID, environment ID, account ID
+- **Environment Context**: Environment name, type, and invocation context
+- **Run Context**: Run reason, category, git branch, and commit SHA
+- **Execution Metadata**: dbt version, query tag, and invocation arguments
+- **Structured Data**: All metadata stored as JSON for flexible querying
 
 ## Installation
 
@@ -82,17 +94,26 @@ You can customize the plugin behavior using these variables in your `dbt_project
 
 ```yaml
 vars:
-  # Schema where the tracking table will be created
+  # Schema where the tracking tables will be created
   artifact_schema: "{{ target.schema }}"
   
   # Table name for tracking model executions
   artifact_table: "dbt_model_executions"
+  
+  # Table name for tracking platform job runs (default: dbt_platform_job_runs)
+  artifact_job_runs_table: "dbt_platform_job_runs"
   
   # Batch size for inserting model execution records (default: 500)
   batch_size: 500
   
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "2024-01-01"
+  
+  # Snowflake credit rate for cost calculations (default: $3 per credit)
+  snowflake_credit_rate: 3
+  
+  # BigQuery on-demand pricing per TiB (default: $6.25 for US regions)
+  bigquery_on_demand_price_per_tib: 6.25
 ```
 
 ### dbt Cloud Environment Variables
@@ -102,6 +123,15 @@ The plugin automatically detects and uses these dbt Cloud environment variables 
 - `DBT_CLOUD_RUN_ID`: Unique identifier for the dbt Cloud run
 - `DBT_CLOUD_JOB_ID`: Identifier for the dbt Cloud job
 - `DBT_CLOUD_PROJECT_ID`: Identifier for the dbt Cloud project
+- `DBT_CLOUD_ENVIRONMENT_ID`: Identifier for the dbt Cloud environment
+- `DBT_CLOUD_ACCOUNT_ID`: Identifier for the dbt Cloud account
+- `DBT_CLOUD_ENVIRONMENT_NAME`: Name of the dbt Cloud environment
+- `DBT_CLOUD_ENVIRONMENT_TYPE`: Type of the dbt Cloud environment
+- `DBT_CLOUD_INVOCATION_CONTEXT`: Context of the dbt invocation
+- `DBT_CLOUD_RUN_REASON_CATEGORY`: Category of the run reason
+- `DBT_CLOUD_RUN_REASON`: Reason for the dbt run
+- `DBT_CLOUD_GIT_BRANCH`: Git branch used for the run
+- `DBT_CLOUD_GIT_SHA`: Git commit SHA used for the run
 
 ### Batch Size Configuration
 
@@ -219,16 +249,19 @@ The plugin includes a comprehensive query comment system that attaches JSON meta
 }
 ```
 
-## Table Schema
+## Table Schemas
 
-The tracking table includes the following columns:
+### Model Executions Table (`dbt_model_executions`)
+
+The primary tracking table includes the following columns:
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `model_name` | varchar | Name of the dbt model |
+| `relation_name` | varchar | Full relation name (database.schema.table) |
 | `model_package` | varchar | Package where the model is defined |
 | `model_type` | varchar | Materialization type (table, view, etc.) |
-| `status` | varchar | Execution status (success, error, skipped) |
+| `status` | varchar | Execution status (success, error, skipped, reused) |
 | `execution_time` | float | Execution time in seconds |
 | `invocation_id` | varchar | Unique dbt run identifier |
 | `query_id` | varchar | Unique query identifier (adapter-specific) |
@@ -238,6 +271,44 @@ The tracking table includes the following columns:
 | `dbt_cloud_project_id` | varchar | dbt Cloud project ID (if applicable) |
 | `dbt_version` | varchar | dbt version used |
 | `run_started_at` | timestamp | When the dbt run started |
+| `node_config` | varchar | Model configuration as JSON string |
+
+### Platform Job Runs Table (`dbt_platform_job_runs`)
+
+The platform tracking table includes the following columns:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `dbt_cloud_run_id` | varchar | Unique dbt Cloud run identifier |
+| `dbt_cloud_job_id` | varchar | dbt Cloud job identifier |
+| `dbt_cloud_environment_id` | varchar | dbt Cloud environment identifier |
+| `dbt_cloud_project_id` | varchar | dbt Cloud project identifier |
+| `dbt_run_context` | json | Comprehensive run metadata including environment details, git info, and execution context |
+
+### Generated Models
+
+The package also creates adapter-specific models for cost analysis:
+
+- **`fct_model_queries_bigquery`**: BigQuery query history with cost and performance metrics
+- **`fct_model_queries_databricks`**: Databricks query history with cost and performance metrics  
+- **`fct_model_queries_snowflake`**: Snowflake query history with credit usage and cost metrics
+- **`rpt_model_cost_bigquery`**: BigQuery model cost aggregation report
+- **`rpt_daily_sao_model_savings_snowflake`**: Snowflake state-aware orchestration savings analysis
+
+### State-Aware Orchestration (SAO) Savings Model
+
+The `rpt_daily_sao_model_savings_snowflake` model provides comprehensive analysis of cost savings from model reuse in Snowflake environments. This model:
+
+- **Identifies Reused Models**: Tracks models with `status = 'reused'` from the tracking table
+- **Calculates Historical Costs**: Aggregates historical cost data for models that were reused
+- **Estimates Savings**: Calculates potential credits and cost savings from avoiding redundant executions
+- **Provides Metrics**: Includes reuse rates, cost efficiency, and time-series analysis
+
+**Key Metrics Provided:**
+- `estimated_credits_saved`: Total Snowflake credits saved from model reuse
+- `estimated_cost_saved_usd`: Estimated cost savings in USD
+- `reuse_rate_percent`: Percentage of runs where the model was reused vs. executed
+- `avg_cost_saved_per_reuse_usd`: Average cost savings per reuse event
 
 ## Usage Examples
 
@@ -294,9 +365,9 @@ order by execution_date desc;
 
 The plugin automatically creates adapter-specific models for query history analysis:
 
-- **BigQuery**: `model_queries_bigquery` - Includes bytes billed, slot usage, and cost estimates
-- **Databricks**: `model_queries_databricks` - Includes scan size, execution time, and cost estimates  
-- **Snowflake**: `model_queries_snowflake` - Includes credits used, warehouse info, and attribution data
+- **BigQuery**: `fct_model_queries_bigquery` - Includes bytes billed, slot usage, and cost estimates
+- **Databricks**: `fct_model_queries_databricks` - Includes scan size, execution time, and cost estimates  
+- **Snowflake**: `fct_model_queries_snowflake` - Includes credits used, warehouse info, and attribution data
 
 **Example - BigQuery Cost Analysis:**
 ```sql
@@ -305,7 +376,7 @@ select
   sum(gb_billed) as total_gb_billed,
   sum(estimated_cost_usd) as total_cost_usd,
   count(*) as query_count
-from model_queries_bigquery
+from fct_model_queries_bigquery
 group by model_name
 order by total_cost_usd desc;
 ```
@@ -317,26 +388,81 @@ select
   sum(credits_attributed_compute) as total_compute_credits,
   sum(credits_used_query_acceleration) as total_acceleration_credits,
   warehouse_name
-from model_queries_snowflake
+from fct_model_queries_snowflake
 group by model_name, warehouse_name
 order by total_compute_credits desc;
+```
+
+### State-Aware Orchestration (SAO) Savings Analysis
+
+The package includes specialized models for analyzing potential savings from dbt's state-aware orchestration:
+
+**Example - Snowflake SAO Savings Analysis:**
+```sql
+-- Analyze daily savings from model reuse
+select 
+  reuse_date,
+  sum(estimated_credits_saved) as total_credits_saved,
+  sum(estimated_cost_saved_usd) as total_cost_saved_usd,
+  count(distinct model_name) as models_reused,
+  avg(reuse_rate_percent) as avg_reuse_rate
+from rpt_daily_sao_model_savings_snowflake
+where reuse_date >= current_date - interval '30 days'
+group by reuse_date
+order by reuse_date desc;
+```
+
+**Example - Model-Level SAO Savings:**
+```sql
+-- Identify models with highest reuse potential
+select 
+  model_name,
+  model_package,
+  sum(reuse_count) as total_reuses,
+  sum(estimated_cost_saved_usd) as total_cost_saved,
+  avg(reuse_rate_percent) as avg_reuse_rate,
+  avg(avg_run_cost) as avg_run_cost_when_not_reused
+from rpt_daily_sao_model_savings_snowflake
+group by model_name, model_package
+having sum(reuse_count) > 10
+order by total_cost_saved desc;
+```
+
+### Platform Job Run Analysis
+
+**Example - Run Context Analysis:**
+```sql
+-- Analyze run patterns using platform metadata
+select 
+  json_extract_scalar(dbt_run_context, '$.dbt_cloud_environment_name') as environment,
+  json_extract_scalar(dbt_run_context, '$.dbt_cloud_run_reason_category') as run_reason,
+  json_extract_scalar(dbt_run_context, '$.dbt_cloud_git_branch') as git_branch,
+  count(*) as run_count,
+  count(distinct dbt_cloud_job_id) as unique_jobs
+from dbt_platform_job_runs
+where dbt_cloud_run_id is not null
+group by 1, 2, 3
+order by run_count desc;
 ```
 
 ## How It Works
 
 This package is designed to collect the data necessary for fusion cost savings analysis:
 
-1. **Hook Execution**: The `on-run-end` hook runs after all models have been executed
-2. **Table Creation**: Creates the tracking table if it doesn't exist
-3. **Data Collection**: Iterates through the `results` object to collect execution metadata
-4. **Record Insertion**: Inserts a record for each model execution with comprehensive details
-5. **Cost Integration**: Automatically integrates with cloud provider billing data for cost analysis
-6. **Fusion Analysis**: Provides structured data optimized for calculating potential fusion savings
+1. **Pre-Run Setup**: The `on-run-start` hook creates tracking tables if they don't exist
+2. **Model Execution Tracking**: The `on-run-end` hook captures model execution details
+3. **Platform Metadata Capture**: Records comprehensive dbt Cloud platform metadata for each run
+4. **Data Collection**: Iterates through the `results` object to collect execution metadata
+5. **Record Insertion**: Inserts records for both model executions and platform job runs
+6. **Cost Integration**: Automatically integrates with cloud provider billing data for cost analysis
+7. **SAO Analysis**: Generates specialized models for state-aware orchestration savings analysis
 
 The collected data enables analysis of:
 - **Execution patterns** that could benefit from fusion's intelligent scheduling
 - **Resource utilization** that could be optimized with state-aware orchestration  
 - **Cost trends** to project potential savings from fusion adoption
+- **Model reuse patterns** to calculate actual savings from state-aware orchestration
+- **Platform usage patterns** for comprehensive dbt Cloud analytics
 
 ## Troubleshooting
 
