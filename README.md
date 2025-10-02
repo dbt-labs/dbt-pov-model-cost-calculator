@@ -464,6 +464,9 @@ The collected data enables analysis of:
 - **Model reuse patterns** to calculate actual savings from state-aware orchestration
 - **Platform usage patterns** for comprehensive dbt Cloud analytics
 
+### Permissions Required
+- Snowflake: You will need to grant the role used by dbt permissions to query the Snowflake database, see [docs]([url](https://docs.snowflake.com/en/sql-reference/account-usage#enabling-other-roles-to-use-schemas-in-the-snowflake-database)) for more info.
+
 ## Troubleshooting
 
 ### Common Issues
