@@ -1,6 +1,6 @@
 # dbt POV Model Cost Savings
 
-A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to dbt's fusion state-aware orchestration. 
+A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to the dbt Fusion engine's state-aware orchestration. 
 
 This package tracks model execution patterns and costs to analyze the efficiency gains possible with fusion's intelligent scheduling and resource optimization.
 
