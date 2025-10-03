@@ -20,7 +20,7 @@
 
 {% macro type_json_insert(data) %}
   {% if target.type == 'bigquery' %}
-    {{ return('json ' ~ "'" ~ data ~ "'") }}
+    {{ return('json ' ~ "'" ~ (data | replace("\\", "\\\\") | replace("'", "\\'")) ~ "'") }}
   {% else  %}
     {{ return( 'parse_json(' ~ "'" ~ data ~ "'" ~ ')' )  }}
   {% endif %}

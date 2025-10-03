@@ -1,0 +1,6 @@
+kind: Fixes
+body: Escape single quotes when inserting JSON in BigQuery
+time: 2025-10-03T14:28:23.346739+02:00
+custom:
+    Author: joar
+    Issue: "24"
