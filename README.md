@@ -2,7 +2,7 @@
 
 A specialized dbt package designed to help dbt Labs calculate potential cost savings customers may realize from switching to the dbt Fusion engine's state-aware orchestration. 
 
-This package tracks model execution patterns and costs to analyze the efficiency gains possible with fusion's intelligent scheduling and resource optimization.
+This package tracks model execution patterns and costs to analyze the efficiency gains possible with Fusion's intelligent scheduling and resource optimization.
 
 > **Important**: This package is designed specifically for dbt Labs' internal proof-of-value of fusion cost savings potential. While the community is free to use it, dbt Labs support is limited to this specific purpose. For general model cost tracking and monitoring, we recommend using community or vendor-supported packages (see [Alternative Solutions](#alternative-solutions) below).
 
