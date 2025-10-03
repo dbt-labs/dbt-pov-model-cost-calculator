@@ -45,9 +45,9 @@ with model_queries as (
       dbt_cloud_run_id,
 
       sum(credits_attributed_compute) as credits_attributed_compute,
-      sum(credits_attributed_compute + credits_used_cloud_services) as total_credits,
+      sum(zeroifnull(credits_attributed_compute) + zeroifnull(credits_used_cloud_services)) as total_credits,
       sum(attributed_compute_cost) as attributed_compute_cost,
-      sum(attributed_compute_cost + cloud_services_cost) as query_cost,
+      sum(zeroifnull(attributed_compute_cost) + zeroifnull(cloud_services_cost)) as query_cost,
       avg(execution_time) as execution_time,
       sum(gb_scanned) as gb_scanned
     from {{ ref('fct_model_queries_snowflake') }}
