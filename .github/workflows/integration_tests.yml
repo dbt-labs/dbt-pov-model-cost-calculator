@@ -48,6 +48,9 @@ jobs:
       BIGQUERY_CLIENT_X509_CERT_URL: ${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}
       BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
 
+      # test environment variables
+      DBT_CLOUD_RUN_REASON: "test' single quote and special characters: #$%^&*()_+-=[]{};:,.<>?`"
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
