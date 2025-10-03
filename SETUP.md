@@ -46,7 +46,7 @@ vars:
   bigquery_on_demand_price_per_tib: 6.25
 ```
 
-### dbt Cloud Environment Variables
+### dbt platform Environment Variables
 
 The plugin automatically detects and uses these dbt Cloud environment variables when available:
 
