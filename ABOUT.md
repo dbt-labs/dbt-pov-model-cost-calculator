@@ -86,7 +86,7 @@ The `rpt_daily_sao_model_savings` model provides comprehensive analysis of cost 
 
 ## How It Works
 
-This package is designed to collect the data necessary for fusion cost savings analysis:
+This package is designed to collect the data necessary for dbt Fusion engine's cost savings analysis:
 
 1. **Pre-Run Setup**: The `on-run-start` hook creates tracking tables if they don't exist
 2. **Model Execution Tracking**: The `on-run-end` hook captures model execution details
@@ -99,7 +99,7 @@ This package is designed to collect the data necessary for fusion cost savings a
 The collected data enables analysis of:
 - **Execution patterns** that could benefit from Fusion's intelligent scheduling
 - **Resource utilization** that could be optimized with state-aware orchestration  
-- **Cost trends** to project potential savings from fusion adoption
+- **Cost trends** to project potential savings from Fusion adoption
 - **Model reuse patterns** to calculate actual savings from state-aware orchestration
 - **Platform usage patterns** for comprehensive dbt Cloud analytics
 

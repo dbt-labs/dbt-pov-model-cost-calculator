@@ -4,7 +4,7 @@ A specialized dbt package designed to help dbt Labs calculate potential cost sav
 
 This package tracks model execution patterns and costs to analyze the efficiency gains possible with Fusion's intelligent scheduling and resource optimization.
 
-> **Important**: This package is designed specifically for dbt Labs' internal proof-of-value of fusion cost savings potential. While the community is free to use it, dbt Labs support is limited to this specific purpose. For general model cost tracking and monitoring, we recommend using community or vendor-supported packages (see [Alternative Solutions](#alternative-solutions) below).
+> **Important**: This package is designed specifically for dbt Labs' internal proof-of-value of Fusion cost savings potential. While the community is free to use it, dbt Labs support is limited to this specific purpose. For general model cost tracking and monitoring, we recommend using community or vendor-supported packages (see [Alternative Solutions](#alternative-solutions) below).
 
 ## 📚 Documentation Index
 
@@ -17,12 +17,12 @@ This package tracks model execution patterns and costs to analyze the efficiency
 This package enables analysis of:
 - **Model execution patterns** and their associated costs
 - **Resource utilization** across different scheduling approaches  
-- **Potential savings** from fusion's state-aware orchestration
-- **Historical cost trends** to project fusion benefits
+- **Potential savings** from Fusion's state-aware orchestration
+- **Historical cost trends** to project Fusion benefits
 
 ## Alternative Solutions
 
-For general model cost tracking and data observability beyond fusion cost analysis, we recommend these community and vendor-supported packages:
+For general model cost tracking and data observability beyond Fusion cost analysis, we recommend these community and vendor-supported packages:
 
 ### Community Packages
 
@@ -32,7 +32,7 @@ For general model cost tracking and data observability beyond fusion cost analys
 
 ### Why Use Alternatives?
 
-While this package is freely available, it's specifically designed for dbt Labs' fusion cost analysis. For broader data observability needs, the packages above offer:
+While this package is freely available, it's specifically designed for dbt Labs' Fusion cost analysis. For broader data observability needs, the packages above offer:
 
 - **Dedicated support** from their respective teams
 - **Regular updates** and feature development
@@ -46,14 +46,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-**Limited Support Scope**: This package is designed specifically for dbt Labs' fusion cost analysis. Support is limited to issues related to this specific purpose.
+**Limited Support Scope**: This package is designed specifically for dbt Labs' Fusion cost analysis. Support is limited to issues related to this specific purpose.
 
 For general questions and community support:
 - Join the [dbt Community Slack](http://community.getdbt.com/)
 - Read more on the [dbt Community Discourse](https://discourse.getdbt.com)
 
-For fusion cost analysis issues:
-- Open an issue on GitHub for bugs or feature requests related to fusion cost calculations
+For Fusion cost analysis issues:
+- Open an issue on GitHub for bugs or feature requests related to Fusion cost calculations
 
 For general model cost tracking and data observability:
 - Consider using [Elementary](https://github.com/elementary-data/dbt-data-reliability) or [select.dev](https://select.dev/) packages with dedicated support teams
