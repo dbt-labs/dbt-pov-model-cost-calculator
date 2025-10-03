@@ -14,7 +14,7 @@ shopt -s expand_aliases
 
 # Define dbtf alias early in the script
 alias dbtf="$HOME/.local/bin/dbt"
-
+export DBT_CLOUD_RUN_REASON="test' single quote and special characters: #$%^&*()_+-=[]{};:,.<>?\`"
 # Function to resolve the actual command to use
 resolve_dbt_command() {
     local cmd=$1
