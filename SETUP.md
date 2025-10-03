@@ -2,8 +2,7 @@
 
 ## Installation
 The following are the required steps for this package to work:
-1. **Update packages.yml**
-   Add the package to your `packages.yml` file:
+1. **Add the package to your `packages.yml` file**:
    ```yaml
    packages:
      - git: "https://github.com/dbt-labs/dbt-pov-model-cost-calculator.git"
