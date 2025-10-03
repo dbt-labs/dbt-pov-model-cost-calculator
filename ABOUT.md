@@ -97,7 +97,7 @@ This package is designed to collect the data necessary for fusion cost savings a
 7. **SAO Analysis**: Generates specialized models for state-aware orchestration savings analysis
 
 The collected data enables analysis of:
-- **Execution patterns** that could benefit from fusion's intelligent scheduling
+- **Execution patterns** that could benefit from Fusion's intelligent scheduling
 - **Resource utilization** that could be optimized with state-aware orchestration  
 - **Cost trends** to project potential savings from fusion adoption
 - **Model reuse patterns** to calculate actual savings from state-aware orchestration
