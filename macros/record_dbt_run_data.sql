@@ -52,7 +52,11 @@
         '{{ dbt_cloud_job_id }}',
         {% if dbt_cloud_environment_id != 'none' %}'{{ dbt_cloud_environment_id }}'{% else %}null{% endif %},
         {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
-        {{ dbt_pov_model_cost_calculator.type_json_insert(dbt.escape_single_quotes(tojson(dbt_run_context))) }}
+        {{ dbt_pov_model_cost_calculator.type_json_insert(
+            dbt_pov_model_cost_calculator.escape_json_for_sql(
+              tojson(dbt_run_context)
+            )
+          ) }}
 
     {% endset %}
 
