@@ -168,7 +168,7 @@ run_dbt_command() {
             $resolved_command run --target $adapter --profiles-dir ..
             ;;
         "build")
-            $resolved_command build --target $adapter --profiles-dir .. --vars "{\"cold_storage_default_value\": \"10\"}" --target-s
+            $resolved_command build --target $adapter --profiles-dir .. --vars "{\"cold_storage_default_value\": \"10\"}"
 
             ;;
         "test")
