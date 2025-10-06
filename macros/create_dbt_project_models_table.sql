@@ -15,7 +15,7 @@
     {% set create_table_sql %}
       create table if not exists {{ tracking_table_fqn }} (
         model_name {{ datatypes.varchar }},
-        relation_name {{ datatypes.text }},
+        relation_name {{ datatypes.varchar }},
         model_package {{ datatypes.varchar }},
         model_type {{ datatypes.varchar }},
         status {{ datatypes.varchar }},

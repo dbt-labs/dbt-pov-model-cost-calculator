@@ -14,14 +14,21 @@ on:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    name: Test ${{ matrix.dbt-command }} on ${{ matrix.adapter }}
+    name: Test ${{ matrix.dbt-command }} on ${{ matrix.adapter }} ${{ matrix.cluster_type }}
     strategy:
       matrix:
-        adapter: [snowflake, databricks, bigquery]
+        adapter: [snowflake, databricks, bigquery, redshift]
         dbt-command: [dbt, dbtf]
+        include:
+          - adapter: redshift
+            cluster_type: provisioned
+          - adapter: redshift
+            cluster_type: serverless
       fail-fast: false
 
     env:
+      TARGET: "${{ matrix.adapter == 'redshift' && format('{0}_{1}', matrix.adapter, matrix.cluster_type) || matrix.adapter }}"
+
       # Snowflake Environment Variables
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
@@ -47,6 +54,20 @@ jobs:
       BIGQUERY_CLIENT_ID: ${{ secrets.BIGQUERY_CLIENT_ID }}
       BIGQUERY_CLIENT_X509_CERT_URL: ${{ secrets.BIGQUERY_CLIENT_X509_CERT_URL }}
       BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
+
+      # Redshift Provisioned Environment Variables
+      REDSHIFT_PROVISIONED_HOST: ${{ secrets.REDSHIFT_PROVISIONED_HOST }}
+      REDSHIFT_PROVISIONED_DBNAME: ${{ secrets.REDSHIFT_PROVISIONED_DBNAME }}
+      REDSHIFT_PROVISIONED_SCHEMA: ${{ secrets.REDSHIFT_PROVISIONED_SCHEMA }}
+      REDSHIFT_PROVISIONED_USER: ${{ secrets.REDSHIFT_PROVISIONED_USER }}
+      DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD: ${{ secrets.DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD }}
+
+      # Redshift Serverless Environment Variables
+      REDSHIFT_SERVERLESS_HOST: ${{ secrets.REDSHIFT_SERVERLESS_HOST }}
+      REDSHIFT_SERVERLESS_DBNAME: ${{ secrets.REDSHIFT_SERVERLESS_DBNAME }}
+      REDSHIFT_SERVERLESS_SCHEMA: ${{ secrets.REDSHIFT_SERVERLESS_SCHEMA }}
+      REDSHIFT_SERVERLESS_USER: ${{ secrets.REDSHIFT_SERVERLESS_USER }}
+      DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD: ${{ secrets.DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD }}
 
       # test environment variables
       DBT_CLOUD_RUN_REASON: "test' single quote and special characters: #$%^&*()_+-=[]{};:,.<>?`"
@@ -79,24 +100,24 @@ jobs:
       - name: Show dbt Command Info
         run: |
           echo "Using dbt command: ${{ matrix.dbt-command }}"
-          echo "Testing adapter: ${{ matrix.adapter }}"
+          echo "Testing adapter: ${TARGET}"
           which ${{ matrix.dbt-command }} || echo "Command not found in PATH"
 
       - name: Install Dependencies
         run: |
-          ${{ matrix.dbt-command }} deps --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          ${{ matrix.dbt-command }} deps --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Debug Connection
         run: |
-          ${{ matrix.dbt-command }} debug --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          ${{ matrix.dbt-command }} debug --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Run dbt Compile
         run: |
-          ${{ matrix.dbt-command }} compile --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          ${{ matrix.dbt-command }} compile --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project
 
       - name: Run dbt Build
         run: |
-          ${{ matrix.dbt-command }} build --target ${{ matrix.adapter }} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh
+          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh
 
       # - name: Verify Artifact Table
       #   run: |
