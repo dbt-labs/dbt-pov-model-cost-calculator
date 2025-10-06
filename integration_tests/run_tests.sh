@@ -168,16 +168,17 @@ run_dbt_command() {
             $resolved_command run --target $adapter --profiles-dir ..
             ;;
         "build")
-            $resolved_command build --target $adapter --profiles-dir ..
+            $resolved_command build --target $adapter --profiles-dir .. --vars "{\"cold_storage_default_value\": \"10\"}"
+
             ;;
         "test")
             $resolved_command test --target $adapter --profiles-dir ..
             ;;
         "clean")
-            $resolved_command run-operation query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
-            $resolved_command run-operation query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
-            $resolved_command run-operation query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
-            $resolved_command run-operation query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation run_query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
             ;;
         *)
             print_error "Unknown command: $command"
