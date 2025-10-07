@@ -14,6 +14,7 @@
 with model_queries as (
   select
     model_name,
+    relation_name,
     model_package,
 
     -- Cost aggregations (compute + cloud services)
@@ -41,6 +42,7 @@ with model_queries as (
   from (
     select
       model_name,
+      relation_name,
       model_package,
       dbt_cloud_run_id,
 
@@ -52,9 +54,9 @@ with model_queries as (
       sum(gb_scanned) as gb_scanned
     from {{ ref('fct_model_queries_snowflake') }}
 
-    group by 1, 2, 3
+    group by 1, 2, 3, 4
   )
-  group by 1, 2
+  group by 1, 2, 3
 ),
 
 -- Deduplicate job runs to handle multiple records with the same dbt_cloud_run_id
@@ -71,6 +73,7 @@ deduplicated_job_runs as (
 reused_models as (
   select
     dbt_models.model_name,
+    dbt_models.relation_name,
     dbt_models.model_package,
     date(dbt_models.run_started_at) as reuse_date,
     job_runs.dbt_cloud_environment_id,
@@ -81,11 +84,12 @@ reused_models as (
   left join deduplicated_job_runs as job_runs
     on job_runs.dbt_cloud_run_id = dbt_models.dbt_cloud_run_id
   where dbt_models.status = 'reused'
-  group by 1, 2, 3, 4, 5
+  group by 1, 2, 3, 4, 5, 6
 )
 
 select
   reused_models.model_name,
+  reused_models.relation_name,
   reused_models.model_package,
   reused_models.reuse_date,
   reused_models.dbt_cloud_environment_id,
@@ -135,3 +139,4 @@ from reused_models
 left join model_queries
   on model_queries.model_name = reused_models.model_name
  and model_queries.model_package = reused_models.model_package
+ and model_queries.relation_name = reused_models.relation_name

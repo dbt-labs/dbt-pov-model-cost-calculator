@@ -36,6 +36,7 @@ select
   queries.query_id,
   dbt.run_started_at,
   dbt.model_name,
+  dbt.relation_name,
   dbt.model_package,
   dbt.model_type,
   dbt.dbt_cloud_job_id,
