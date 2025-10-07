@@ -1,6 +1,7 @@
 {% macro _extract_node_config(node) %}
   {% if node.config is mapping %}
       {% set node_config = tojson({
+        "unique_id": node.unique_id,
         "group": node.config.group,
         "tags": node.config.tags,
         'persist_docs': node.config.persist_docs,
@@ -65,7 +66,7 @@
           {% for result in batch_results %}
             (
               '{{ result.node.name }}',
-              {% if result.relation_name is defined %}'{{ result.relation_name}}'{% else %}null{% endif %},
+              '{{ result.node.unique_id }}',
               '{{ result.node.package_name }}',
               {% if result.node.resource_type == 'model' %}'{{ result.node.config.materialized }}'{% else %}'{{ result.node.resource_type }}'{% endif %},
               '{{ result.status }}',

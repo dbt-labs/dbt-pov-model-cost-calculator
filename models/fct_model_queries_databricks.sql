@@ -129,6 +129,8 @@ select
   qwc.statement_id as query_id,
   dbt.run_started_at,
   dbt.model_name,
+  dbt.relation_name,
+  dbt.model_type,
   dbt.model_package,
   dbt.dbt_cloud_job_id,
   dbt.dbt_cloud_run_id,
@@ -176,6 +178,7 @@ select
 from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
 left join query_with_compute qwc
   on qwc.query_metadata.dbt_cloud_run_id = dbt.dbt_cloud_run_id
+  and qwc.query_metadata.node_id = ifnull(dbt.relation_name, qwc.query_metadata.node_id)
   and qwc.query_metadata.node_name = dbt.model_name
   and qwc.query_metadata.invocation_id = dbt.invocation_id
   and qwc.query_text not like '%{{ tracking_table }}%'

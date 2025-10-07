@@ -37,6 +37,7 @@ select
   dbt.run_started_at,
   dbt.model_name,
   dbt.model_package,
+  dbt.model_type,
   dbt.dbt_cloud_job_id,
   dbt.dbt_cloud_run_id,
   dbt.execution_time,
@@ -64,6 +65,7 @@ inner join queries_with_metadata as queries
   on queries.query_metadata:dbt_cloud_job_id = dbt.dbt_cloud_job_id
   and queries.query_metadata:dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and queries.query_metadata:node_name = dbt.model_name
+  and queries.query_metadata:node_id = ifnull(dbt.relation_name, queries.query_metadata:node_id)
   and queries.start_time >= dbt.run_started_at
   and queries.start_time <= dbt.insert_timestamp
 

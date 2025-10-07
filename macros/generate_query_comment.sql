@@ -8,8 +8,8 @@
   {%- endif -%}
 
   {# Add dbt Cloud identifiers if available #}
-  {%- set dbt_cloud_job_id = env_var('DBT_CLOUD_JOB_ID', invocation_id) -%}
-  {%- set dbt_cloud_run_id = env_var('DBT_CLOUD_RUN_ID', modules.datetime.datetime.utcnow().timestamp()) -%}
+  {%- set dbt_cloud_job_id = dbt_pov_model_cost_calculator.get_dbt_cloud_job_id() -%}
+  {%- set dbt_cloud_run_id = dbt_pov_model_cost_calculator.get_dbt_cloud_run_id() -%}
 
   {%- if dbt_cloud_job_id -%}
     {%- do comment_dict.update(dbt_cloud_job_id=dbt_cloud_job_id) -%}
