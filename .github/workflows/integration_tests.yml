@@ -19,11 +19,25 @@ jobs:
       matrix:
         adapter: [snowflake, databricks, bigquery, redshift]
         dbt-command: [dbt, dbtf]
-        include:
-          - adapter: redshift
+        cluster_type: ['', provisioned, serverless]
+        exclude:
+          - adapter: snowflake
             cluster_type: provisioned
-          - adapter: redshift
+          - adapter: snowflake
             cluster_type: serverless
+
+          - adapter: databricks
+            cluster_type: provisioned
+          - adapter: databricks
+            cluster_type: serverless
+
+          - adapter: bigquery
+            cluster_type: provisioned
+          - adapter: bigquery
+            cluster_type: serverless
+
+          - adapter: redshift
+            cluster_type: ''
       fail-fast: false
 
     env:
@@ -105,19 +119,29 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          ${{ matrix.dbt-command }} deps --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          ${{ matrix.dbt-command }} deps --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project ${EXTRA_DBT_ARGS}
 
       - name: Debug Connection
         run: |
-          ${{ matrix.dbt-command }} debug --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          ${{ matrix.dbt-command }} debug --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project ${EXTRA_DBT_ARGS}
 
       - name: Run dbt Compile
         run: |
-          ${{ matrix.dbt-command }} compile --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project
+          EXTRA_DBT_ARGS=''
+          if [ "${TARGET}" = "redshift_serverless" ]; then
+              EXTRA_DBT_ARGS='--vars {"is_serverless_redshift":true} --debug'
+              echo "With additional args: ${EXTRA_DBT_ARGS}"
+          fi
+          ${{ matrix.dbt-command }} compile --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project ${EXTRA_DBT_ARGS}
 
       - name: Run dbt Build
         run: |
-          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh
+          EXTRA_DBT_ARGS=''
+          if [ "${TARGET}" = "redshift_serverless" ]; then
+              EXTRA_DBT_ARGS='--vars {"is_serverless_redshift":true} --debug'
+              echo "With additional args: ${EXTRA_DBT_ARGS}"
+          fi
+          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh ${EXTRA_DBT_ARGS}
 
       # - name: Verify Artifact Table
       #   run: |

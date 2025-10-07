@@ -66,5 +66,3 @@ test_project:
       user: "{{ env_var('REDSHIFT_SERVERLESS_USER') }}"
       password: "{{ env_var('DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD') }}"
       query_tag: "dbt_model_build_logger_integration_test"
-      vars:
-        is_serverless_redshift: true

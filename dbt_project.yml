@@ -66,3 +66,4 @@ vars:
   redshift_provisioned_query_history_table: "SYS_QUERY_HISTORY"
   redshift_serverless_query_history_table: "SYS_QUERY_HISTORY"
   redshift_serverless_usage_table: "SYS_SERVERLESS_USAGE"
+  is_serverless_redshift: false
