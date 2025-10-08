@@ -85,6 +85,50 @@ BIGQUERY_CLIENT_X509_CERT_URL=https://www.googleapis.com/robot/v1/metadata/x509/
 BIGQUERY_LOCATION=US
 
 # =============================================================================
+# REDSHIFT PROVISIONED CONFIGURATION
+# =============================================================================
+
+# Hostname for your provisioned cluster
+REDSHIFT_PROVISIONED_HOST=your-redshift-host-address
+
+# Database to connect to
+REDSHIFT_PROVISIONED_DBNAME=your-redshift-db-name
+
+# Specific schema to use
+REDSHIFT_PROVISIONED_SCHEMA=your-redshift-schema
+
+# User name for your provisioned cluster
+REDSHIFT_PROVISIONED_USER=your-redshift-user
+
+# Password for your provisioned cluster
+DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD=your-redshift-password
+
+# Optional settings:
+# REDSHIFT_PROVISIONED_PORT=5439
+
+# =============================================================================
+# REDSHIFT SERVERLESS CONFIGURATION
+# =============================================================================
+
+# Hostname for your serverless cluster
+REDSHIFT_SERVERLESS_HOST=your-redshift-host-address
+
+# Database to connect to
+REDSHIFT_SERVERLESS_DBNAME=your-redshift-db-name
+
+# Specific schema to use
+REDSHIFT_SERVERLESS_SCHEMA=your-redshift-schema
+
+# User name for your serverless cluster
+REDSHIFT_SERVERLESS_USER=your-redshift-user
+
+# Password for your serverless cluster
+DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD=your-redshift-password
+
+# Optional settings:
+# REDSHIFT_SERVERLESS_PORT=5439
+
+# =============================================================================
 # OPTIONAL CONFIGURATION
 # =============================================================================
 # dbt Cloud Job ID for testing (optional)

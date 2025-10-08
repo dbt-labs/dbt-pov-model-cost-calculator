@@ -44,3 +44,25 @@ test_project:
       threads: 4
       location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
       query_tag: "dbt_model_build_logger_integration_test"
+
+    redshift_provisioned:
+      # https://docs.getdbt.com/docs/core/connect-data-platform/redshift-setup
+      type: redshift
+      host: "{{ env_var('REDSHIFT_PROVISIONED_HOST') }}"
+      port: "{{ env_var('REDSHIFT_PROVISIONED_PORT', 5439) }}"
+      dbname: "{{ env_var('REDSHIFT_PROVISIONED_DBNAME') }}"
+      schema: "{{ env_var('REDSHIFT_PROVISIONED_SCHEMA') }}"
+      user: "{{ env_var('REDSHIFT_PROVISIONED_USER') }}"
+      password: "{{ env_var('DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD') }}"
+      query_tag: "dbt_model_build_logger_integration_test"
+
+    redshift_serverless:
+      # https://docs.getdbt.com/docs/core/connect-data-platform/redshift-setup
+      type: redshift
+      host: "{{ env_var('REDSHIFT_SERVERLESS_HOST') }}"
+      port: "{{ env_var('REDSHIFT_SERVERLESS_PORT', 5439) }}"
+      dbname: "{{ env_var('REDSHIFT_SERVERLESS_DBNAME') }}"
+      schema: "{{ env_var('REDSHIFT_SERVERLESS_SCHEMA') }}"
+      user: "{{ env_var('REDSHIFT_SERVERLESS_USER') }}"
+      password: "{{ env_var('DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD') }}"
+      query_tag: "dbt_model_build_logger_integration_test"

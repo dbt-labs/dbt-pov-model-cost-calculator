@@ -41,6 +41,18 @@ BIGQUERY_KEYFILE      # Service account key file (JSON content)
 BIGQUERY_LOCATION     # Location/region (optional, defaults to 'US')
 ```
 
+#### Redshift Provisioned Secrets
+```
+REDSHIFT_PROVISIONED_USER                       # The Redshift user
+DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD    # The Redshift user's password
+```
+
+#### Redshift Serverless Secrets
+```
+REDSHIFT_SERVERLESS_USER                       # The Redshift user
+DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD    # The Redshift user's password
+```
+
 ## Local Development Setup
 
 ### Prerequisites
@@ -100,6 +112,22 @@ BIGQUERY_PROJECT=your_gcp_project_id
 BIGQUERY_DATASET=dbt_pov_model_cost_calculator_test
 DBT_ENV_SECRET_BIGQUERY_KEYFILE={"type":"service_account",...}
 BIGQUERY_LOCATION=US
+
+# Redshift Provisioned
+REDSHIFT_PROVISIONED_HOST=your-redshift-host-address
+REDSHIFT_PROVISIONED_DBNAME=your-redshift-db-name
+REDSHIFT_PROVISIONED_SCHEMA=your-redshift-schema
+REDSHIFT_PROVISIONED_ROLE=your-redshift-role
+REDSHIFT_PROVISIONED_USER=your-redshift-user
+DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD=your-redshift-password
+
+# Redshift Serverless
+REDSHIFT_SERVERLESS_HOST=your-redshift-host-address
+REDSHIFT_SERVERLESS_DBNAME=your-redshift-db-name
+REDSHIFT_SERVERLESS_SCHEMA=your-redshift-schema
+REDSHIFT_SERVERLESS_ROLE=your-redshift-role
+REDSHIFT_SERVERLESS_USER=your-redshift-user
+DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD=your-redshift-password
 ```
 
 **Important Notes:**
@@ -182,6 +210,97 @@ BIGQUERY_LOCATION=US
      --access_file=access.json
    ```
 
+### Redshift
+
+The package supports both **Redshift Provisioned** and **Redshift Serverless** clusters with automatic cost calculation and query tracking.
+
+#### Redshift Provisioned
+
+For Redshift provisioned clusters, the package automatically detects the Redshift adapter and uses the provisioned cost model.
+
+**Required Configuration:**
+
+```yaml
+# profiles.yml
+your_profile:
+  target: prod
+  outputs:
+    prod:
+      type: redshift
+      host: your-cluster.region.redshift.amazonaws.com
+      port: 5439
+      dbname: your_database
+      schema: your_schema
+      user: your_username
+      password: your_password
+```
+
+**Recommended Variables:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # Redshift provisioned cost configuration
+  redshift_provisioned_node_price_per_hour: 0.543  # Default: RA3.large pricing
+  redshift_provisioned_node_count: 1               # Number of nodes in cluster
+```
+
+**Optional Variables:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # System table override (optional)
+  redshift_provisioned_query_history_table: "SYS_QUERY_HISTORY"
+```
+
+#### Redshift Serverless
+
+For Redshift Serverless, you **must** set the `is_serverless_redshift` variable to `true`.
+
+**Required Configuration:**
+
+```yaml
+# profiles.yml
+your_profile:
+  target: prod
+  outputs:
+    prod:
+      type: redshift
+      host: your-workgroup.region.redshift-serverless.amazonaws.com
+      port: 5439
+      dbname: your_database
+      schema: your_schema
+      user: your_username
+      password: your_password
+      # CRITICAL: This flag is required for serverless
+      is_serverless_redshift: true
+```
+
+**Or set via dbt_project.yml:**
+
+```yaml
+# dbt_project.yml
+vars:
+  # REQUIRED: Enable serverless mode
+  is_serverless_redshift: true
+
+  # Optional serverless configuration
+  redshift_serverless_usage_price_per_hour: 0.36  # Default: US region pricing
+
+  # System table overrides (optional)
+  redshift_serverless_query_history_table: "SYS_QUERY_HISTORY"
+  redshift_serverless_usage_table: "SYS_SERVERLESS_USAGE"
+```
+
+#### Important Notes
+
+1. **Serverless Detection**: The `is_serverless_redshift` variable is **required** for serverless clusters
+2. **System Tables**: Both configurations use Redshift system tables (`SYS_QUERY_HISTORY`, `SYS_SERVERLESS_USAGE`)
+3. **Permissions**: Ensure your user has access to system tables for query history
+4. **Regional Pricing**: Update pricing variables for non-US regions
+5. **Query Filtering**: The package filters out system queries and utility commands for cleaner cost estimates
+
 ## Troubleshooting
 
 ### Common Issues
@@ -206,6 +325,8 @@ To clean up test artifacts:
 ./run_tests.sh snowflake clean
 ./run_tests.sh databricks clean
 ./run_tests.sh bigquery clean
+./run_tests.sh redshift_provisioned clean
+./run_tests.sh redshift_serverless clean
 ```
 
 ## Security Best Practices
