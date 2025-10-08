@@ -49,7 +49,7 @@ jobs:
       BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION }}
 
       # test environment variables
-      DBT_CLOUD_RUN_REASON: "test' single quote and special characters: #$%^&*()_+-=[]{};:,.<>?`"
+      DBT_CLOUD_RUN_REASON: "test' single quote and special characters: #$%^&*()_+-=[]{};:,.<>?`. literal double-quote: \", literal backslash + single quote: \\', literal backslash: \\, literal backslash + backslash: \\\\ and finally $'\n'"
 
     steps:
       - name: Checkout Repository
