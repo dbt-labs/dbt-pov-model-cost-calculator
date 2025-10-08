@@ -41,7 +41,8 @@
         WHEN CAN_JSON_PARSE(REGEXP_SUBSTR(query_text, '\\/\\*\\s*(\\{.*?\\})\\s*\\*\\/', 1, 1, 'ep')) THEN
           REGEXP_SUBSTR(query_text, '\\/\\*\\s*(\\{.*?\\})\\s*\\*\\/', 1, 1, 'ep')
         ELSE null
-      END AS query_metadata
+      END AS query_metadata,
+      json_extract_path_text(query_metadata, 'node_id') as extracted_node_id
     from {{ redshift_serverless_query_history_table }} as queries
     where
       queries.start_time >= '{{ monitor_start_date }}'
@@ -71,7 +72,8 @@
       queries.queue_time,
       start_time,
       query_metadata,
-      rpus.total_charged_seconds
+      rpus.total_charged_seconds,
+      queries.extracted_node_id
     from queries_in_period as queries
     join rpus_per_query as rpus
     on queries.query_id = rpus.query_id
@@ -80,15 +82,17 @@
   select
     queries.query_id as query_id,
     queries.query_text as query_text,
-    dbt.run_started_at as run_started_at,
-    dbt.model_name as model_name,
-    dbt.model_package as model_package,
-    dbt.dbt_cloud_job_id as dbt_cloud_job_id,
-    dbt.dbt_cloud_run_id as dbt_cloud_run_id,
-    dbt.execution_time as execution_time,
-    dbt.status as status,
-    dbt.invocation_id as invocation_id,
-    dbt.dbt_version as dbt_version,
+    dbt.run_started_at,
+    dbt.model_name,
+    dbt.relation_name,
+    dbt.model_type,
+    dbt.model_package,
+    dbt.dbt_cloud_job_id,
+    dbt.dbt_cloud_run_id,
+    dbt.execution_time,
+    dbt.status,
+    dbt.invocation_id,
+    dbt.dbt_version,
 
     -- Cost information
     (queries.total_charged_seconds / 3600) * {{ redshift_serverless_usage_price_per_hour }} as estimated_cost_usd,
@@ -100,10 +104,16 @@
 
   from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
   inner join queries_with_metadata as queries
-    on json_extract_path_text(queries.query_metadata, 'dbt_cloud_job_id') = dbt.dbt_cloud_job_id
-    and json_extract_path_text(queries.query_metadata, 'node_name') = dbt.model_name
-    and queries.start_time >= dbt.run_started_at
-    and queries.start_time <= dbt.insert_timestamp
+    on
+      json_extract_path_text(queries.query_metadata, 'dbt_cloud_job_id') = dbt.dbt_cloud_job_id
+      and
+      json_extract_path_text(queries.query_metadata, 'node_name') = dbt.model_name
+      and
+      queries.extracted_node_id = coalesce(dbt.relation_name, queries.extracted_node_id)
+      and
+      queries.start_time >= dbt.run_started_at
+      and
+      queries.start_time <= dbt.insert_timestamp
 
   where dbt.dbt_cloud_job_id is not null
     and dbt.dbt_cloud_job_id != 'none'
@@ -127,7 +137,8 @@
         when CAN_JSON_PARSE(REGEXP_SUBSTR(query_text, '\\/\\*\\s*(\\{.*?\\})\\s*\\*\\/', 1, 1, 'ep')) then
           REGEXP_SUBSTR(query_text, '\\/\\*\\s*(\\{.*?\\})\\s*\\*\\/', 1, 1, 'ep')
         else null
-      end as query_metadata
+      end as query_metadata,
+      json_extract_path_text(query_metadata, 'node_id') as extracted_node_id
     from {{ redshift_provisioned_query_history_table }} queries
     where
       -- Filter out internal system and utility queries (userids 1 and below are system users)
@@ -150,6 +161,17 @@
   )
   select
     queries.query_id as query_id,
+    dbt.run_started_at,
+    dbt.model_name,
+    dbt.relation_name,
+    dbt.model_type,
+    dbt.model_package,
+    dbt.dbt_cloud_job_id,
+    dbt.dbt_cloud_run_id,
+    dbt.execution_time,
+    dbt.status,
+    dbt.invocation_id,
+    dbt.dbt_version,
     queries.user_id as user_id,
     -- Display a snippet of the query text
     queries.query_text as query_text,
@@ -169,6 +191,8 @@
     json_extract_path_text(queries.query_metadata, 'dbt_cloud_job_id') = dbt.dbt_cloud_job_id
     and
     json_extract_path_text(queries.query_metadata, 'node_name') = dbt.model_name
+    and
+    queries.extracted_node_id = coalesce(dbt.relation_name, queries.extracted_node_id)
     and
     queries.start_time >= dbt.run_started_at
     and
