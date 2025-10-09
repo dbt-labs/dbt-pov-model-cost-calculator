@@ -59,17 +59,6 @@ with model_queries as (
   group by 1, 2, 3
 ),
 
--- Deduplicate job runs to handle multiple records with the same dbt_cloud_run_id
--- Using the most recent record based on a timestamp if available, or arbitrary deduplication
-deduplicated_job_runs as (
-  select
-      dbt_cloud_run_id,
-      dbt_cloud_environment_id,
-      dbt_cloud_project_id
-    from {{ dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() }}
-  group by 1, 2, 3
-),
-
 reused_models as (
   select
     dbt_models.model_name,
@@ -81,7 +70,7 @@ reused_models as (
     count(1) as reuse_count,
     count(distinct dbt_models.dbt_cloud_run_id) as unique_runs_reused
   from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt_models
-  left join deduplicated_job_runs as job_runs
+  left join {{ ref('deduplicated_job_runs') }} as job_runs
     on job_runs.dbt_cloud_run_id = dbt_models.dbt_cloud_run_id
   where dbt_models.status = 'reused'
   group by 1, 2, 3, 4, 5, 6
