@@ -35,6 +35,10 @@ with jobs_with_metadata as (
     ) as extracted_node_name,
     json_extract_scalar(
       regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
+      '$.node_id'
+    ) as extracted_node_id,
+    json_extract_scalar(
+      regexp_extract(jobs.query, r'/\* (.*?) \*/', 1),
       '$.invocation_id'
     ) as extracted_invocation_id
   from `{{ bigquery_jobs_table }}` as jobs
@@ -48,6 +52,8 @@ select
   jobs.job_id as query_id,
   dbt.run_started_at,
   dbt.model_name,
+  dbt.relation_name,
+  dbt.model_type,
   dbt.model_package,
   dbt.dbt_cloud_job_id,
   dbt.dbt_cloud_run_id,
@@ -75,6 +81,7 @@ from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
 inner join jobs_with_metadata as jobs
    on jobs.extracted_dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and jobs.extracted_node_name = dbt.model_name
+  and jobs.extracted_node_id = ifnull(dbt.relation_name, jobs.extracted_node_id)
   and jobs.extracted_invocation_id = dbt.invocation_id
   and jobs.creation_time >= timestamp(dbt.run_started_at)
   and jobs.creation_time <= dbt.insert_timestamp

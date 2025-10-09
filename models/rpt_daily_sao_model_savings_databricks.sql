@@ -1,13 +1,13 @@
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_adapter_type('snowflake'),
+    enabled=dbt_pov_model_cost_calculator.is_adapter_type('databricks'),
     materialized='view',
     alias='rpt_daily_sao_model_savings'
 ) }}
 
--- Savings calculator for Snowflake dbt models that were reused
+-- Savings calculator for Databricks dbt models that were reused
 -- This model calculates the cost savings from models that were not run because they were "reused"
 -- by aggregating historical cost data and joining with reused model executions
--- 
+--
 -- Time Dimension: Results are grouped by date to show savings trends over time
 -- This allows for time-series analysis of reuse patterns and cost savings
 
@@ -17,17 +17,14 @@ with model_queries as (
     relation_name,
     model_package,
 
-    -- Cost aggregations (compute + cloud services)
-    avg(total_credits) as avg_run_credits,
-    max(total_credits) as max_run_credits,
-    sum(total_credits) as total_run_credits,
-    sum(credits_attributed_compute) as total_run_compute_credits,
+    -- Cost aggregations (DBUs and USD)
+    avg(dbus_consumed) as avg_run_dbus,
+    max(dbus_consumed) as max_run_dbus,
+    sum(dbus_consumed) as total_run_dbus,
 
-
-    avg(query_cost) as avg_run_cost,
-    max(query_cost) as max_run_cost,
-    sum(query_cost) as total_run_cost,
-    sum(attributed_compute_cost) as total_run_compute_cost,
+    avg(estimated_cost_usd) as avg_run_cost,
+    max(estimated_cost_usd) as max_run_cost,
+    sum(estimated_cost_usd) as total_run_cost,
 
     -- Query count metrics
     count(*) as total_query_count,
@@ -36,8 +33,8 @@ with model_queries as (
     -- Additional metrics for context
     avg(execution_time) as avg_execution_time_seconds,
     max(execution_time) as max_execution_time_seconds,
-    avg(gb_scanned) as avg_gb_scanned,
-    max(gb_scanned) as max_gb_scanned
+    avg(gb_read) as avg_gb_read,
+    max(gb_read) as max_gb_read
 
   from (
     select
@@ -46,13 +43,11 @@ with model_queries as (
       model_package,
       dbt_cloud_run_id,
 
-      sum(credits_attributed_compute) as credits_attributed_compute,
-      sum(zeroifnull(credits_attributed_compute) + zeroifnull(credits_used_cloud_services)) as total_credits,
-      sum(attributed_compute_cost) as attributed_compute_cost,
-      sum(zeroifnull(attributed_compute_cost) + zeroifnull(cloud_services_cost)) as query_cost,
+      sum(dbus_consumed) as dbus_consumed,
+      sum(estimated_cost_usd) as estimated_cost_usd,
       avg(execution_time) as execution_time,
-      sum(gb_scanned) as gb_scanned
-    from {{ ref('fct_model_queries_snowflake') }}
+      sum(gb_read) as gb_read
+    from {{ ref('fct_model_queries_databricks') }}
 
     group by 1, 2, 3, 4
   )
@@ -99,10 +94,10 @@ select
   reused_models.reuse_count,
   reused_models.unique_runs_reused,
 
-  -- Historical cost metrics (what it would have cost if not reused - includes compute + cloud services)
-  model_queries.avg_run_credits,
-  model_queries.max_run_credits,
-  model_queries.total_run_credits,
+  -- Historical cost metrics (what it would have cost if not reused)
+  model_queries.avg_run_dbus,
+  model_queries.max_run_dbus,
+  model_queries.total_run_dbus,
 
   model_queries.avg_run_cost,
   model_queries.max_run_cost,
@@ -113,11 +108,11 @@ select
   model_queries.total_run_count,
   model_queries.avg_execution_time_seconds,
   model_queries.max_execution_time_seconds,
-  model_queries.avg_gb_scanned,
-  model_queries.max_gb_scanned,
+  model_queries.avg_gb_read,
+  model_queries.max_gb_read,
 
   -- Calculated savings metrics
-  reused_models.reuse_count * model_queries.avg_run_credits as estimated_credits_saved,
+  reused_models.reuse_count * model_queries.avg_run_dbus as estimated_dbus_saved,
   reused_models.reuse_count * model_queries.avg_run_cost as estimated_cost_saved_usd,
 
   -- Additional savings insights

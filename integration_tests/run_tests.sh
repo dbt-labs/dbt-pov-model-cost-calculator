@@ -13,26 +13,27 @@ set -e
 shopt -s expand_aliases
 
 # Define dbtf alias early in the script
-alias dbtf="$HOME/.local/bin/dbt"
+alias dbtf="\${DBT_BIN:-\${HOME}/.local/bin/dbt}"
 export DBT_CLOUD_RUN_REASON="test' single quote and special characters: #$%^&*()_+-=[]{};:,.<>?\`"
+
+# Default command
+DBT_COMMAND="${DBT_COMMAND:-dbt}"
+
 # Function to resolve the actual command to use
 resolve_dbt_command() {
     local cmd=$1
     case $cmd in
         "dbtf")
-            echo "$HOME/.local/bin/dbt"
+            echo "${DBT_BIN:-${HOME}/.local/bin/dbt}"
             ;;
         "dbt")
-            echo "dbt"
+            echo "${DBT_COMMAND}"
             ;;
         *)
             echo "$cmd"
             ;;
     esac
 }
-
-# Default command
-DBT_COMMAND="dbt"
 
 # Parse optional arguments
 while getopts ":c:" opt; do
@@ -113,6 +114,24 @@ validate_env_vars() {
         "bigquery")
             required_vars=("BIGQUERY_PROJECT" "BIGQUERY_DATASET" "BIGQUERY_CLIENT_X509_CERT_URL" )
             ;;
+        "redshift_provisioned")
+            required_vars=( \
+                "REDSHIFT_PROVISIONED_HOST" \
+                "REDSHIFT_PROVISIONED_USER" \
+                "DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD" \
+                "REDSHIFT_PROVISIONED_DBNAME" \
+                "REDSHIFT_PROVISIONED_SCHEMA" \
+            )
+            ;;
+        "redshift_serverless")
+            required_vars=( \
+                "REDSHIFT_SERVERLESS_HOST" \
+                "REDSHIFT_SERVERLESS_USER" \
+                "DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD" \
+                "REDSHIFT_SERVERLESS_DBNAME" \
+                "REDSHIFT_SERVERLESS_SCHEMA" \
+            )
+            ;;
         *)
             return 0  # Skip validation for 'all' or unknown adapters
             ;;
@@ -154,31 +173,40 @@ run_dbt_command() {
 
     cd test_project
 
+    # Set up vars parameter based on adapter type
+    local vars_param=""
+    local build_vars_param=""
+    if [ "$adapter" = "redshift_serverless" ]; then
+        vars_param='--vars {"is_serverless_redshift":true}'
+        build_vars_param='--vars {"cold_storage_default_value": "10", "is_serverless_redshift": true}'
+    else
+        build_vars_param='--vars {"cold_storage_default_value": "10"}'
+    fi
+
     case $command in
         "deps")
-            $resolved_command deps --target $adapter --profiles-dir ..
+            $resolved_command deps --target $adapter --profiles-dir .. $vars_param
             ;;
         "parse")
-            $resolved_command parse --target $adapter --profiles-dir ..
+            $resolved_command parse --target $adapter --profiles-dir .. $vars_param
             ;;
         "compile")
-            $resolved_command compile --target $adapter --profiles-dir ..
+            $resolved_command compile --target $adapter --profiles-dir .. $vars_param
             ;;
         "run")
-            $resolved_command run --target $adapter --profiles-dir ..
+            $resolved_command run --target $adapter --profiles-dir .. $vars_param
             ;;
         "build")
-            $resolved_command build --target $adapter --profiles-dir .. --vars "{\"cold_storage_default_value\": \"10\"}"
-
+            $resolved_command build --target $adapter --profiles-dir .. $build_vars_param
             ;;
         "test")
-            $resolved_command test --target $adapter --profiles-dir ..
+            $resolved_command test --target $adapter --profiles-dir .. $vars_param
             ;;
         "clean")
-            $resolved_command run-operation run_query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. || true
-            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. || true
-            $resolved_command run-operation run_query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. || true
-            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. $vars_param || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. $vars_param || true
+            $resolved_command run-operation run_query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. $vars_param || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. $vars_param || true
             ;;
         *)
             print_error "Unknown command: $command"
@@ -223,7 +251,7 @@ fi
 
 # Handle different adapter options
 case $ADAPTER in
-    "snowflake"|"databricks"|"bigquery")
+    "snowflake"|"databricks"|"bigquery"|"redshift_provisioned"|"redshift_serverless")
         if [ "$COMMAND" = "full" ]; then
             run_full_test $ADAPTER
         else
@@ -232,7 +260,7 @@ case $ADAPTER in
         ;;
     "all")
         print_status "Running tests for all adapters..."
-        for adapter in snowflake databricks bigquery; do
+        for adapter in snowflake databricks bigquery redshift_provisioned redshift_serverless; do
             print_status "Testing $adapter..."
             if [ "$COMMAND" = "full" ]; then
                 run_full_test $adapter
@@ -244,7 +272,7 @@ case $ADAPTER in
         ;;
     *)
         print_error "Unknown adapter: $ADAPTER"
-        print_status "Available adapters: snowflake, databricks, bigquery, all"
+        print_status "Available adapters: snowflake, databricks, bigquery, redshift_provisioned, redshift_serverless, all"
         exit 1
         ;;
 esac
