@@ -102,4 +102,3 @@ The collected data enables analysis of:
 - **Cost trends** to project potential savings from Fusion adoption
 - **Model reuse patterns** to calculate actual savings from state-aware orchestration
 - **Platform usage patterns** for comprehensive dbt Cloud analytics
-

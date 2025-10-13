@@ -7,7 +7,7 @@
 -- Savings calculator for Snowflake dbt models that were reused
 -- This model calculates the cost savings from models that were not run because they were "reused"
 -- by aggregating historical cost data and joining with reused model executions
--- 
+--
 -- Time Dimension: Results are grouped by date to show savings trends over time
 -- This allows for time-series analysis of reuse patterns and cost savings
 

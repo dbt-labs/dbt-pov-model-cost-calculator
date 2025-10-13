@@ -183,7 +183,7 @@ run_dbt_command() {
         build_vars_param="{\"cold_storage_default_value\": \"10\", \"is_serverless_redshift\": true}"
     else
         build_vars_param="{\"cold_storage_default_value\": \"10\"}"
-        
+
     fi
 
     case $command in

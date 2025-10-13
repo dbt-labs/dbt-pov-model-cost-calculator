@@ -12,4 +12,3 @@ select
   dbt_cloud_project_id
 from {{ dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() }}
 group by 1, 2, 3
-
