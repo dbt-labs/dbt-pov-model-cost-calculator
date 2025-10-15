@@ -256,6 +256,10 @@ fi
 # Handle different adapter options
 case $ADAPTER in
     "snowflake"|"databricks"|"bigquery"|"redshift_provisioned"|"redshift_serverless")
+        if [ "$ADAPTER" = "redshift_serverless" ]; then
+            echo "Redshift Serverless Host: $REDSHIFT_SERVERLESS_HOST"
+        fi
+
         if [ "$COMMAND" = "full" ]; then
             run_full_test $ADAPTER
         else
