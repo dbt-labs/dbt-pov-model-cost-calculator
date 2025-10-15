@@ -124,7 +124,7 @@ jobs:
 
       - name: Debug Connection
         run: |
-          echo "Redshift Serverless Host: ${{env.REDSHIFT_SERVERLESS_HOST}}"
+          echo "Redshift Serverless Host: $(echo ${{env.REDSHIFT_SERVERLESS_HOST}} | base64)"
           ${{ matrix.dbt-command }} debug --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project ${EXTRA_DBT_ARGS}
 
       - name: Run dbt Compile
