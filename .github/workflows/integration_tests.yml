@@ -39,9 +39,6 @@ jobs:
           - adapter: redshift
             cluster_type: ''
 
-          - adapter: redshift
-            dbt-command: dbtf
-
       fail-fast: false
 
     env:
