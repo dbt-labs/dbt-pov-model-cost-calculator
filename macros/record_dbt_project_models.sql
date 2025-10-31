@@ -79,7 +79,7 @@
               {% if dbt_cloud_project_id != 'none' %}'{{ dbt_cloud_project_id }}'{% else %}null{% endif %},
               '{{ dbt_version }}',
               '{{ run_started_at }}',
-              '{{ dbt_pov_model_cost_calculator._extract_node_config(result.node) }}'
+              '{{ dbt_pov_model_cost_calculator.escape_json_for_sql(dbt_pov_model_cost_calculator._extract_node_config(result.node)) }}'
             ){% if not loop.last %},{% endif %}
           {% endfor %}
         {% endset %}
