@@ -1,5 +1,5 @@
 {% macro record_dbt_run_data() %}
-  {% if execute %}
+  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() %}
     {% set tracking_job_runs_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
 
     {# Collect essential dbt Cloud environment variables #}
