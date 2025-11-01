@@ -1,5 +1,5 @@
 {% macro create_dbt_project_models_table() %}
-  {% if execute %}
+  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() %}
     {% set tracking_table = dbt_pov_model_cost_calculator.get_tracking_table() %}
     {% set tracking_schema = dbt_pov_model_cost_calculator.get_tracking_schema() %}
     {% set tracking_database = dbt_pov_model_cost_calculator.get_tracking_database() %}
