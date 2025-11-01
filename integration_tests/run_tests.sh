@@ -176,7 +176,7 @@ run_dbt_command() {
     cd test_project
 
     # Set up vars parameter based on adapter type
-    local vars_param=""
+    local vars_param="{}"
     local build_vars_param=""
     if [ "$adapter" = "redshift_serverless" ]; then
         vars_param="{\"is_serverless_redshift\":true}"
