@@ -17,7 +17,7 @@
 {% endmacro %}
 
 {% macro record_dbt_project_models() %}
-  {% if execute %}
+  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() %}
     {% set tracking_table_fqn = dbt_pov_model_cost_calculator.get_tracking_table_fqn() %}
 
     {% set node_results = [] %}
