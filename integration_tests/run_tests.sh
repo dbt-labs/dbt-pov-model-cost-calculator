@@ -197,7 +197,7 @@ run_dbt_command() {
             $resolved_command deps --target $adapter --profiles-dir .. $vars_flag
             ;;
         "parse")
-            $resolved_command parse --target $adapter --profiles-dir .. $vars_flag
+            $resolved_command parse --target $adapter --profiles-dir .. 
             ;;
         "compile")
             $resolved_command compile --target $adapter --profiles-dir .. $vars_flag
