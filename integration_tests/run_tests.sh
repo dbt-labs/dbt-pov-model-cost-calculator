@@ -176,7 +176,7 @@ run_dbt_command() {
     cd test_project
 
     # Set up vars parameter based on adapter type
-    local vars_param="{}"
+    local vars_param=""
     local build_vars_param=""
     if [ "$adapter" = "redshift_serverless" ]; then
         vars_param="{\"is_serverless_redshift\":true}"
@@ -197,7 +197,7 @@ run_dbt_command() {
             $resolved_command deps --target $adapter --profiles-dir .. $vars_flag
             ;;
         "parse")
-            $resolved_command parse --target $adapter --profiles-dir .. 
+            $resolved_command parse --target $adapter --profiles-dir .. $vars_flag
             ;;
         "compile")
             $resolved_command compile --target $adapter --profiles-dir .. $vars_flag
@@ -213,10 +213,10 @@ run_dbt_command() {
             $resolved_command test --target $adapter --profiles-dir .. $vars_flag
             ;;
         "clean")
-            $resolved_command run-operation run_query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir .. $vars_flag || true
-            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir .. $vars_flag || true
-            $resolved_command run-operation run_query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir .. $vars_flag || true
-            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir .. $vars_flag || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir ..  || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_basic_model"}' --target $adapter --profiles-dir ..  || true
+            $resolved_command run-operation run_query --args '{sql: "drop view if exists test_view_model"}' --target $adapter --profiles-dir ..  || true
+            $resolved_command run-operation run_query --args '{sql: "drop table if exists test_incremental_model"}' --target $adapter --profiles-dir ..  || true
             ;;
         *)
             print_error "Unknown command: $command"

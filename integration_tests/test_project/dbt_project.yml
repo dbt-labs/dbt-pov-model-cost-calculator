@@ -44,3 +44,6 @@ models:
   test_project:
     # Config indicated by + and applies to all files under models/example/
     +materialized: view
+
+  dbt_pov_model_cost_calculator:
+    +enabled: true
