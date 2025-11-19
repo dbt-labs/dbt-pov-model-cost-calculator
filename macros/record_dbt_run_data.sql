@@ -1,5 +1,5 @@
 {% macro record_dbt_run_data() %}
-  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() %}
+  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() and dbt_pov_model_cost_calculator.is_target_enabled() %}
     {% set tracking_job_runs_table_fqn = dbt_pov_model_cost_calculator.get_job_runs_tracking_table_fqn() %}
 
     {# Collect essential dbt Cloud environment variables #}
@@ -63,5 +63,7 @@
     {{ log("Recording dbt run data for run_id: " ~ dbt_cloud_run_id, info=true) }}
     {% do run_query(insert_sql) %}
     {{ log("Successfully recorded dbt run data", info=true) }}
+  {% elif execute and dbt_pov_model_cost_calculator.is_supported_command() and not dbt_pov_model_cost_calculator.is_target_enabled() %}
+    {{ log("Skipping run data tracking - target '" ~ target.name ~ "' is not in enabled_targets list", info=true) }}
   {% endif %}
 {% endmacro %}

@@ -1,5 +1,5 @@
 {% macro create_dbt_project_models_table() %}
-  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() %}
+  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() and dbt_pov_model_cost_calculator.is_target_enabled() %}
     {% set tracking_table = dbt_pov_model_cost_calculator.get_tracking_table() %}
     {% set tracking_schema = dbt_pov_model_cost_calculator.get_tracking_schema() %}
     {% set tracking_database = dbt_pov_model_cost_calculator.get_tracking_database() %}
@@ -47,5 +47,7 @@
     {% do run_query(create_table_sql) %}
     {% do run_query(create_job_run_table_sql) %}
     {{ log("Successfully created artifact tracking tables", info=true) }}
+  {% elif execute and dbt_pov_model_cost_calculator.is_supported_command() and not dbt_pov_model_cost_calculator.is_target_enabled() %}
+    {{ log("Skipping artifact tracking table creation - target '" ~ target.name ~ "' is not in enabled_targets list", info=true) }}
   {% endif %}
 {% endmacro %}

@@ -39,6 +39,7 @@ vars:
   databricks_billing_prices_table: "system.billing.list_prices"
   snowflake_query_history_table: "snowflake.account_usage.query_history"
   snowflake_query_attribution_table: "snowflake.account_usage.query_attribution_history"
+  enabled_targets: ['dev']
 
 models:
   test_project:

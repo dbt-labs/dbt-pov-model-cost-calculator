@@ -56,6 +56,13 @@ vars:
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "{{ (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d') }}"
 
+  # Target name filter for enabling models and artifact tracking (optional)
+  # Controls both model enablement and artifact tracking (table creation, data collection)
+  # If set, models and tracking will only be active if target.name is in this list
+  # Example: enabled_targets: ['dev', 'prod', 'staging']
+  # Leave commented or set to null to disable target filtering (enables for all targets)
+  # enabled_targets: null
+
   # System table overrides (optional - defaults to standard system tables)
   bigquery_jobs_table: "{{ target.project }}.region-us.INFORMATION_SCHEMA.JOBS"
   databricks_query_history_table: "system.query.history"

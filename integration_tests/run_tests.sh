@@ -176,41 +176,34 @@ run_dbt_command() {
     cd test_project
 
     # Set up vars parameter based on adapter type
-    local vars_param=""
-    local build_vars_param=""
+    local vars_param="{\"enabled_targets\": [\"$adapter\"]}"
+    local build_vars_param="{\"enabled_targets\": [\"$adapter\"]}"
     if [ "$adapter" = "redshift_serverless" ]; then
-        vars_param="{\"is_serverless_redshift\":true}"
-        build_vars_param="{\"cold_storage_default_value\": \"10\", \"is_serverless_redshift\": true}"
+        vars_param="{\"is_serverless_redshift\": true, \"enabled_targets\": \[\"$adapter\"\]}"
+        build_vars_param="{\"cold_storage_default_value\": \"10\", \"is_serverless_redshift\": true, \"enabled_targets\": [\"$adapter\"]}"
     else
-        build_vars_param="{\"cold_storage_default_value\": \"10\"}"
-
-    fi
-
-    # Construct vars flag only if vars_param is not empty
-    local vars_flag=""
-    if [ -n "$vars_param" ]; then
-        vars_flag="--vars \"$vars_param\""
+        build_vars_param="{\"cold_storage_default_value\": \"10\", \"enabled_targets\": [\"$adapter\"]}"
     fi
 
     case $command in
         "deps")
-            $resolved_command deps --target $adapter --profiles-dir .. $vars_flag
+            $resolved_command deps --target $adapter --profiles-dir .. --vars "$vars_param"
             ;;
         "parse")
-            $resolved_command parse --target $adapter --profiles-dir .. $vars_flag
+            $resolved_command parse --target $adapter --profiles-dir .. --vars "$vars_param"
             ;;
         "compile")
-            $resolved_command compile --target $adapter --profiles-dir .. $vars_flag
+            $resolved_command compile --target $adapter --profiles-dir .. --vars "$vars_param"
             ;;
         "run")
-            $resolved_command run --target $adapter --profiles-dir .. $vars_flag
+            $resolved_command run --target $adapter --profiles-dir .. --vars "$vars_param"
             ;;
         "build")
             echo "Running build with vars: $build_vars_param"
             $resolved_command build --target $adapter --profiles-dir .. --vars "$build_vars_param"
             ;;
         "test")
-            $resolved_command test --target $adapter --profiles-dir .. $vars_flag
+            $resolved_command test --target $adapter --profiles-dir .. --vars "$vars_param"
             ;;
         "clean")
             $resolved_command run-operation run_query --args '{sql: "drop table if exists {{ var(\"artifact_table\", \"dbt_model_executions\") }}"}' --target $adapter --profiles-dir ..  || true

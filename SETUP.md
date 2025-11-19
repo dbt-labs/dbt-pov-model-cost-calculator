@@ -53,6 +53,13 @@ vars:
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "2024-01-01"
   
+  # Target name filter for enabling models and artifact tracking (optional)
+  # If set, models will only be enabled if target.name is in this list
+  # Also controls whether artifact tracking tables are created and populated
+  # Example: enabled_targets: ['dev', 'prod', 'staging']
+  # Leave unset or set to null to disable target filtering
+  enabled_targets: null
+  
   # Snowflake credit rate for cost calculations (default: $3 per credit)
   snowflake_credit_rate: 3
   
@@ -96,6 +103,113 @@ batch_size: 100
 # For maximum performance (use with caution)
 batch_size: 2000
 ```
+
+### Model Enablement and Artifact Tracking Control
+
+The package provides flexible control over which models are enabled and whether artifact tracking is active based on both adapter type and target name.
+
+#### Target-Based Control
+
+The `enabled_targets` variable controls:
+1. **Model enablement** - Which models are enabled in specific targets
+2. **Artifact tracking** - Whether tracking tables are created and populated
+3. **Run data collection** - Whether run metadata is recorded
+
+This provides a unified approach to control all package features based on your target environment.
+
+#### Using `is_enabled` Macro
+
+The `is_enabled` macro combines adapter type checking with target name filtering:
+
+```sql
+{{ config(
+    enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake', ['dev', 'prod'])
+) }}
+```
+
+**Parameters:**
+- `adapter_type` (required): The database adapter type (e.g., 'snowflake', 'bigquery', 'databricks')
+- `target_names` (optional): List of target names where the model should be enabled
+
+**Behavior:**
+1. Model is disabled if adapter type doesn't match
+2. If `target_names` is specified, model is enabled only if `target.name` is in the list
+3. If `target_names` is not specified, falls back to `enabled_targets` variable
+4. If neither is specified, model is enabled (adapter type already matched)
+
+**Usage Examples:**
+
+```sql
+-- Enable only on Snowflake in dev and prod targets
+{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake', ['dev', 'prod'])) }}
+
+-- Enable on BigQuery, use global enabled_targets variable for target filtering
+{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('bigquery')) }}
+
+-- Enable on Databricks in production only
+{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('databricks', ['prod'])) }}
+```
+
+**Global Target Filtering:**
+
+Set `enabled_targets` in your `dbt_project.yml` to apply target filtering across all models by default:
+
+```yaml
+vars:
+  # Only enable models in dev and prod targets
+  enabled_targets: ['dev', 'prod']
+```
+
+With this configuration:
+- Models using `is_enabled('snowflake')` will only run on Snowflake in dev or prod
+- Artifact tracking (table creation, model execution recording, run data recording) will only occur in dev or prod
+- When running in other targets (e.g., 'staging'), you'll see informative log messages indicating tracking is skipped
+
+**Environment-Specific Configuration:**
+
+```yaml
+vars:
+  # Use environment variables for flexible deployment
+  enabled_targets: "{{ env_var('ENABLED_TARGETS', 'null') | from_json }}"
+```
+
+```bash
+# Enable in specific targets
+export ENABLED_TARGETS='["dev", "prod", "staging"]'
+dbt run
+```
+
+**What Happens When Target Is Disabled:**
+
+When running in a target that's not in the `enabled_targets` list:
+- Package models will not be created/updated
+- Artifact tracking tables will not be created
+- Model execution data will not be recorded
+- Run metadata will not be captured
+- Log messages will indicate tracking is skipped for the target
+
+Example log output:
+```
+Skipping artifact tracking table creation - target 'local_dev' is not in enabled_targets list
+Skipping model execution tracking - target 'local_dev' is not in enabled_targets list
+Skipping run data tracking - target 'local_dev' is not in enabled_targets list
+```
+
+This is useful for:
+- **Local development** - Avoid cluttering your local environment with tracking data
+- **CI/CD pipelines** - Only track production or staging runs
+- **Cost control** - Reduce storage and compute costs by limiting tracking to specific environments
+- **Testing** - Disable tracking during testing without modifying configuration
+
+#### Legacy `is_adapter_type` Macro
+
+For backward compatibility, the `is_adapter_type` macro is still available:
+
+```sql
+{{ config(enabled=dbt_pov_model_cost_calculator.is_adapter_type('snowflake')) }}
+```
+
+This only checks adapter type without target filtering. **Recommend migrating to `is_enabled` for enhanced control.**
 
 ### Query Monitoring Time Range
 

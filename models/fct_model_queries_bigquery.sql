@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_adapter_type('bigquery'),
+    enabled=dbt_pov_model_cost_calculator.is_enabled('bigquery'),
     materialized='view',
     alias='fct_dbt_model_queries'
 ) }}
