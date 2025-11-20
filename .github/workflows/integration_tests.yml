@@ -143,7 +143,9 @@ jobs:
               EXTRA_DBT_ARGS='--vars "{\"is_serverless_redshift\":true, \"enabled_targets\": [\"${{ matrix.adapter }}\"]}" --debug'
           fi
           echo "With additional args: ${EXTRA_DBT_ARGS}"
-          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh ${EXTRA_DBT_ARGS}
+          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests \
+          --project-dir integration_tests/test_project \
+          --full-refresh --vars "$EXTRA_DBT_ARGS"
 
       # - name: Verify Artifact Table
       #   run: |
