@@ -53,12 +53,17 @@ vars:
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "2024-01-01"
   
-  # Target name filter for enabling models and artifact tracking (optional)
-  # If set, models will only be enabled if target.name is in this list
-  # Also controls whether artifact tracking tables are created and populated
-  # Example: enabled_targets: ['dev', 'prod', 'staging']
-  # Leave unset or set to null to disable target filtering
-  enabled_targets: null
+  # Cost savings calculator enablement control (optional)
+  # Controls both model enablement and artifact tracking
+  # Default: true (enabled for all targets)
+  # 
+  # Examples:
+  #   Enable only in specific targets:
+  #   enable_cost_savings_calculator: "{{ target.name in ['dev', 'prod'] }}"
+  #   
+  #   Enable based on environment variable:
+  #   enable_cost_savings_calculator: "{{ env_var('ENABLE_COST_CALCULATOR', 'true') | as_bool }}"
+  enable_cost_savings_calculator: true
   
   # Snowflake credit rate for cost calculations (default: $3 per credit)
   snowflake_credit_rate: 3
@@ -106,100 +111,141 @@ batch_size: 2000
 
 ### Model Enablement and Artifact Tracking Control
 
-The package provides flexible control over which models are enabled and whether artifact tracking is active based on both adapter type and target name.
+The package provides flexible control over which models are enabled and whether artifact tracking is active.
 
-#### Target-Based Control
+#### Cost Savings Calculator Enablement Control
 
-The `enabled_targets` variable controls:
-1. **Model enablement** - Which models are enabled in specific targets
+The `enable_cost_savings_calculator` variable controls all cost calculator functionality:
+1. **Model enablement** - Whether cost calculator models are created/updated
 2. **Artifact tracking** - Whether tracking tables are created and populated
 3. **Run data collection** - Whether run metadata is recorded
 
-This provides a unified approach to control all package features based on your target environment.
+This boolean variable gives you complete flexibility to implement your own enablement logic.
 
 #### Using `is_enabled` Macro
 
-The `is_enabled` macro combines adapter type checking with target name filtering:
+The `is_enabled` macro combines adapter type checking with cost calculator enablement control:
 
 ```sql
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake', ['dev', 'prod'])
+    enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake')
 ) }}
 ```
 
 **Parameters:**
 - `adapter_type` (required): The database adapter type (e.g., 'snowflake', 'bigquery', 'databricks')
-- `target_names` (optional): List of target names where the model should be enabled
 
 **Behavior:**
-1. Model is disabled if adapter type doesn't match
-2. If `target_names` is specified, model is enabled only if `target.name` is in the list
-3. If `target_names` is not specified, falls back to `enabled_targets` variable
-4. If neither is specified, model is enabled (adapter type already matched)
+1. Model is disabled if adapter type doesn't match `target.type`
+2. Model is disabled if `enable_cost_savings_calculator` variable is false
+3. Model is enabled if both checks pass
 
 **Usage Examples:**
 
 ```sql
--- Enable only on Snowflake in dev and prod targets
-{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake', ['dev', 'prod'])) }}
+-- Enable on Snowflake (respects enable_cost_savings_calculator setting)
+{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake')) }}
 
--- Enable on BigQuery, use global enabled_targets variable for target filtering
+-- Enable on BigQuery (respects enable_cost_savings_calculator setting)
 {{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('bigquery')) }}
 
--- Enable on Databricks in production only
-{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('databricks', ['prod'])) }}
+-- Enable on Databricks (respects enable_cost_savings_calculator setting)
+{{ config(enabled=dbt_pov_model_cost_calculator.is_enabled('databricks')) }}
 ```
 
-**Global Target Filtering:**
+**Calculator-Level Enablement Control:**
 
-Set `enabled_targets` in your `dbt_project.yml` to apply target filtering across all models by default:
+Control all cost calculator functionality with the `enable_cost_savings_calculator` variable in your `dbt_project.yml`:
 
 ```yaml
 vars:
-  # Only enable models in dev and prod targets
-  enabled_targets: ['dev', 'prod']
+  # Enable only in specific targets
+  enable_cost_savings_calculator: "{{ target.name in ['dev', 'prod'] }}"
 ```
-
-With this configuration:
-- Models using `is_enabled('snowflake')` will only run on Snowflake in dev or prod
-- Artifact tracking (table creation, model execution recording, run data recording) will only occur in dev or prod
-- When running in other targets (e.g., 'staging'), you'll see informative log messages indicating tracking is skipped
-
-**Environment-Specific Configuration:**
 
 ```yaml
 vars:
-  # Use environment variables for flexible deployment
-  enabled_targets: "{{ env_var('ENABLED_TARGETS', 'null') | from_json }}"
+  # Enable based on environment variable
+  enable_cost_savings_calculator: "{{ env_var('ENABLE_COST_CALCULATOR', 'true') | as_bool }}"
 ```
 
-```bash
-# Enable in specific targets
-export ENABLED_TARGETS='["dev", "prod", "staging"]'
-dbt run
+```yaml
+vars:
+  # Custom logic combining multiple conditions
+  enable_cost_savings_calculator: "{{ target.name == 'prod' and env_var('ENABLE_TRACKING', 'false') | as_bool }}"
 ```
 
-**What Happens When Target Is Disabled:**
+```yaml
+vars:
+  # Always enabled (default behavior)
+  enable_cost_savings_calculator: true
+```
 
-When running in a target that's not in the `enabled_targets` list:
-- Package models will not be created/updated
+```yaml
+vars:
+  # Always disabled
+  enable_cost_savings_calculator: false
+```
+
+**What Happens When Calculator Is Disabled:**
+
+When `enable_cost_savings_calculator` is set to `false`:
+- Cost calculator models will not be created/updated
 - Artifact tracking tables will not be created
 - Model execution data will not be recorded
 - Run metadata will not be captured
-- Log messages will indicate tracking is skipped for the target
+- Log messages will indicate tracking is skipped
 
 Example log output:
 ```
-Skipping artifact tracking table creation - target 'local_dev' is not in enabled_targets list
-Skipping model execution tracking - target 'local_dev' is not in enabled_targets list
-Skipping run data tracking - target 'local_dev' is not in enabled_targets list
+Skipping artifact tracking table creation - enable_cost_savings_calculator is set to false
+Skipping model execution tracking - enable_cost_savings_calculator is set to false
+Skipping run data tracking - enable_cost_savings_calculator is set to false
 ```
 
-This is useful for:
-- **Local development** - Avoid cluttering your local environment with tracking data
-- **CI/CD pipelines** - Only track production or staging runs
-- **Cost control** - Reduce storage and compute costs by limiting tracking to specific environments
-- **Testing** - Disable tracking during testing without modifying configuration
+**Common Use Cases:**
+
+1. **Enable only in production:**
+```yaml
+vars:
+  enable_cost_savings_calculator: "{{ target.name == 'prod' }}"
+```
+
+2. **Disable for local development:**
+```yaml
+vars:
+  enable_cost_savings_calculator: "{{ target.name != 'local' }}"
+```
+
+3. **Enable in multiple environments:**
+```yaml
+vars:
+  enable_cost_savings_calculator: "{{ target.name in ['dev', 'staging', 'prod'] }}"
+```
+
+4. **Control via environment variable:**
+```yaml
+vars:
+  enable_cost_savings_calculator: "{{ env_var('ENABLE_COST_TRACKING', 'false') | as_bool }}"
+```
+
+Then run:
+```bash
+export ENABLE_COST_TRACKING=true
+dbt run
+```
+
+5. **Disable during CI/CD:**
+```yaml
+vars:
+  enable_cost_savings_calculator: "{{ env_var('CI', 'false') != 'true' }}"
+```
+
+This approach gives you complete flexibility to implement your own enablement logic based on:
+- Target names
+- Environment variables
+- Custom business logic
+- Any other Jinja expression that evaluates to a boolean
 
 #### Legacy `is_adapter_type` Macro
 
@@ -209,7 +255,7 @@ For backward compatibility, the `is_adapter_type` macro is still available:
 {{ config(enabled=dbt_pov_model_cost_calculator.is_adapter_type('snowflake')) }}
 ```
 
-This only checks adapter type without target filtering. **Recommend migrating to `is_enabled` for enhanced control.**
+This only checks adapter type without cost calculator enablement control. **Recommend migrating to `is_enabled` for enhanced control and consistency with artifact tracking behavior.**
 
 ### Query Monitoring Time Range
 

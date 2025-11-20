@@ -3,19 +3,12 @@
   {{ return(target.type == adapter_type) }}
 {% endmacro %}
 
+
 {% macro is_target_enabled() %}
-  {# Check if current target is enabled based on enabled_targets variable #}
-  {% set enabled_targets = var('enabled_targets', none) %}
-  
-  {# If no target filter is specified, tracking is enabled for all targets #}
-  {% if enabled_targets is none %}
-    {{ return(true) }}
-  {% endif %}
-  
-  {# Check if current target is in the allowed list #}
-  {% set target_is_enabled = (target.name in enabled_targets) %}
-  {{ return(target_is_enabled) }}
+  {% set is_enabled = var('enable_cost_savings_calculator', true) %}
+  {{ return(is_enabled | as_bool) }}
 {% endmacro %}
+
 
 {% macro is_enabled(adapter_type) %}
   

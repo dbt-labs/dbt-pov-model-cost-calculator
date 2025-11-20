@@ -64,6 +64,6 @@
     {% do run_query(insert_sql) %}
     {{ log("Successfully recorded dbt run data", info=true) }}
   {% elif execute and dbt_pov_model_cost_calculator.is_supported_command() and not dbt_pov_model_cost_calculator.is_target_enabled() %}
-    {{ log("Skipping run data tracking - target '" ~ target.name ~ "' is not in enabled_targets list", info=true) }}
+    {{ log("Skipping run data tracking - enable_cost_savings_calculator is set to false", info=true) }}
   {% endif %}
 {% endmacro %}

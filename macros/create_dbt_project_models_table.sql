@@ -48,6 +48,6 @@
     {% do run_query(create_job_run_table_sql) %}
     {{ log("Successfully created artifact tracking tables", info=true) }}
   {% elif execute and dbt_pov_model_cost_calculator.is_supported_command() and not dbt_pov_model_cost_calculator.is_target_enabled() %}
-    {{ log("Skipping artifact tracking table creation - target '" ~ target.name ~ "' is not in enabled_targets list", info=true) }}
+    {{ log("Skipping artifact tracking table creation - enable_cost_savings_calculator is set to false", info=true) }}
   {% endif %}
 {% endmacro %}

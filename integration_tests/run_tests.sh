@@ -176,13 +176,13 @@ run_dbt_command() {
     cd test_project
 
     # Set up vars parameter based on adapter type
-    local vars_param="{\"enabled_targets\": [\"$adapter\"]}"
-    local build_vars_param="{\"enabled_targets\": [\"$adapter\"]}"
+    local vars_param="{\"enable_cost_savings_calculator\": true}"
+    local build_vars_param="{\"enable_cost_savings_calculator\": true}"
     if [ "$adapter" = "redshift_serverless" ]; then
-        vars_param="{\"is_serverless_redshift\": true, \"enabled_targets\": \[\"$adapter\"\]}"
-        build_vars_param="{\"cold_storage_default_value\": \"10\", \"is_serverless_redshift\": true, \"enabled_targets\": [\"$adapter\"]}"
+        vars_param="{\"is_serverless_redshift\": true, \"enable_cost_savings_calculator\": true}"
+        build_vars_param="{\"cold_storage_default_value\": \"10\", \"is_serverless_redshift\": true, \"enable_cost_savings_calculator\": true}"
     else
-        build_vars_param="{\"cold_storage_default_value\": \"10\", \"enabled_targets\": [\"$adapter\"]}"
+        build_vars_param="{\"cold_storage_default_value\": \"10\", \"enable_cost_savings_calculator\": true}"
     fi
 
     case $command in
