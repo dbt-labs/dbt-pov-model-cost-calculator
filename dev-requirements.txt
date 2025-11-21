@@ -2,7 +2,7 @@ black==24.1.1
 bumpversion
 flake8
 flaky
-freezegun==1.4.0
+freezegun==1.5.5
 hypothesis
 ipdb
 mypy==1.8.0
