@@ -89,7 +89,5 @@
     {%- endfor -%}
 
     {{ log("Successfully logged " ~ total_nodes ~ " model executions in " ~ num_batches ~ " batches", info=true) }}
-  {% elif execute and dbt_pov_model_cost_calculator.is_supported_command() and not dbt_pov_model_cost_calculator.is_target_enabled() %}
-    {{ log("Skipping model execution tracking - enable_cost_savings_calculator is set to false", info=true) }}
   {% endif %}
 {% endmacro %}
