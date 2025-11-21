@@ -128,21 +128,24 @@ jobs:
 
       - name: Run dbt Compile
         run: |
-          EXTRA_DBT_ARGS=''
+          EXTRA_DBT_ARGS="{\"enable_cost_savings_calculator\": true}"
           if [ "${TARGET}" = "redshift_serverless" ]; then
-              EXTRA_DBT_ARGS='--vars {"is_serverless_redshift":true} --debug'
-              echo "With additional args: ${EXTRA_DBT_ARGS}"
+              EXTRA_DBT_ARGS="{\"is_serverless_redshift\":true, \"enable_cost_savings_calculator\": true}"
           fi
-          ${{ matrix.dbt-command }} compile --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project ${EXTRA_DBT_ARGS}
+          echo "With additional args: ${EXTRA_DBT_ARGS}"
+          ${{ matrix.dbt-command }} compile --target ${TARGET} --profiles-dir integration_tests \
+          --project-dir integration_tests/test_project --vars "$EXTRA_DBT_ARGS"
 
       - name: Run dbt Build
         run: |
-          EXTRA_DBT_ARGS=''
+          EXTRA_DBT_ARGS="{\"enable_cost_savings_calculator\": true}"
           if [ "${TARGET}" = "redshift_serverless" ]; then
-              EXTRA_DBT_ARGS='--vars {"is_serverless_redshift":true} --debug'
-              echo "With additional args: ${EXTRA_DBT_ARGS}"
+              EXTRA_DBT_ARGS="{\"is_serverless_redshift\":true, \"enable_cost_savings_calculator\": true}"
           fi
-          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project --full-refresh ${EXTRA_DBT_ARGS}
+          echo "With additional args: ${EXTRA_DBT_ARGS}"
+          ${{ matrix.dbt-command }} build --target ${TARGET} --profiles-dir integration_tests \
+          --project-dir integration_tests/test_project \
+          --full-refresh --vars "$EXTRA_DBT_ARGS"
 
       # - name: Verify Artifact Table
       #   run: |

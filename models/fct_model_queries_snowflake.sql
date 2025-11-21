@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_adapter_type('snowflake'),
+    enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake'),
     materialized='view',
     alias='fct_dbt_model_queries'
 ) }}

@@ -56,6 +56,24 @@ vars:
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "{{ (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d') }}"
 
+  # Cost savings calculator enablement control (optional)
+  # Controls both model enablement and artifact tracking (table creation, data collection)
+  # Set to false to disable all cost savings calculator functionality
+  # Default: true (enabled)
+  #
+  # Examples:
+  #   # Enable only in specific targets:
+  #   enable_cost_savings_calculator: "{{ target.name in ['dev', 'prod'] }}"
+  #
+  #   # Enable based on environment variable:
+  #   enable_cost_savings_calculator: "{{ env_var('ENABLE_COST_CALCULATOR', 'true') | as_bool }}"
+  #
+  #   # Always enabled (default):
+  #   enable_cost_savings_calculator: true
+  #
+  #   # Always disabled:
+  #   enable_cost_savings_calculator: false
+
   # System table overrides (optional - defaults to standard system tables)
   bigquery_jobs_table: "{{ target.project }}.region-us.INFORMATION_SCHEMA.JOBS"
   databricks_query_history_table: "system.query.history"

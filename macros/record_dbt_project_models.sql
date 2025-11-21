@@ -17,7 +17,7 @@
 {% endmacro %}
 
 {% macro record_dbt_project_models() %}
-  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() %}
+  {% if execute and dbt_pov_model_cost_calculator.is_supported_command() and dbt_pov_model_cost_calculator.is_target_enabled() %}
     {% set tracking_table_fqn = dbt_pov_model_cost_calculator.get_tracking_table_fqn() %}
 
     {% set node_results = [] %}
@@ -88,6 +88,6 @@
       {%- endif -%}
     {%- endfor -%}
 
-    {{ log("Successfully logged " ~ total_models ~ " model executions in " ~ num_batches ~ " batches", info=true) }}
+    {{ log("Successfully logged " ~ total_nodes ~ " model executions in " ~ num_batches ~ " batches", info=true) }}
   {% endif %}
 {% endmacro %}

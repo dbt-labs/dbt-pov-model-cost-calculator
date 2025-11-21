@@ -1,5 +1,5 @@
 {{ config(
-    enabled=is_adapter_type('redshift'),
+    enabled=dbt_pov_model_cost_calculator.is_enabled('redshift'),
     materialized='view',
     alias='fct_dbt_model_queries'
 ) }}
