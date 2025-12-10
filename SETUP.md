@@ -191,16 +191,12 @@ The plugin includes a query comment macro that attaches JSON metadata to all SQL
 
 The following are the required steps to capture current state costs, SAO costs, and then run the package to calcualte the resulting savings.
 
-1. **Add the on-run-start and on-run-end macros in dbt_project.yml along with optional vars of your chosing**:
+The below execution assumes you are directly updating your baseline jobs to utilize SAO, building the package assets to the same schema and database. Updated instructions coming soon for teams testing SAO separate from the environment running their baseline.
+
+1. **Add the query comment macro in your dbt_project.yml along with optional vars of your chosing**:
    ```yaml
    # Add to your existing dbt_project.yml
-   # Hooks that create and populate the tracking tables used for POV analysis.
-   on-run-start:
-     - "{{ dbt_pov_model_cost_calculator.create_dbt_project_models_table() }}"
-
-   on-run-end:
-     - "{{ dbt_pov_model_cost_calculator.record_dbt_project_models() }}"
-     - "{{ dbt_pov_model_cost_calculator.record_dbt_run_data() }}"
+   query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
    
    vars:
     dbt_pov_model_cost_calculator:
