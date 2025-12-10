@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_adapter_type('bigquery'),
+    enabled=dbt_pov_model_cost_calculator.is_enabled('bigquery'),
     materialized='view',
     alias='rpt_daily_sao_model_savings'
 ) }}
@@ -14,6 +14,7 @@
 -- BigQuery Pricing: Handles both on-demand ($6.25/TiB default) and slot-based pricing
 
 {% set bigquery_on_demand_price_per_tib = var('bigquery_on_demand_price_per_tib', 6.25) %}
+{% set bigquery_slot_ms_per_hour = var('bigquery_slot_ms_per_hour', 0.04) %}
 
 with model_queries as (
   select
@@ -25,6 +26,11 @@ with model_queries as (
     avg(on_demand_cost) as avg_run_on_demand_cost,
     max(on_demand_cost) as max_run_on_demand_cost,
     sum(on_demand_cost) as total_run_on_demand_cost,
+
+    -- Capacity cost aggregations (slot hours)
+    avg(capacity_cost) as avg_run_capacity_cost,
+    max(capacity_cost) as max_run_capacity_cost,
+    sum(capacity_cost) as total_run_capacity_cost,
 
     -- Slot usage aggregations
     avg(slot_minutes) as avg_run_slot_minutes,
@@ -58,7 +64,7 @@ with model_queries as (
       -- Calculate on-demand cost per query
       -- Convert bytes to TiB (1 TiB = 1024^4 bytes) and multiply by price
       (total_bytes_billed / pow(1024, 4)) * {{ bigquery_on_demand_price_per_tib }} as on_demand_cost,
-
+      (total_slot_ms / 3600000) * {{ bigquery_slot_ms_per_hour }} as capacity_cost,
       slot_minutes,
       job_avg_slots,
       total_bytes_billed,
@@ -98,10 +104,15 @@ select
   reused_models.reuse_count,
   reused_models.unique_runs_reused,
 
-  -- Historical on-demand cost metrics (what it would have cost if not reused)
+  -- Historical on-demand cost metrics
   model_queries.avg_run_on_demand_cost,
   model_queries.max_run_on_demand_cost,
   model_queries.total_run_on_demand_cost,
+
+  -- Historical on-demand cost metrics
+  model_queries.avg_run_capacity_cost,
+  model_queries.max_run_capacity_cost,
+  model_queries.total_run_capacity_cost,
 
   -- Historical slot usage metrics
   model_queries.avg_run_slot_minutes,

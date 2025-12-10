@@ -1,5 +1,5 @@
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_adapter_type('databricks'),
+    enabled=dbt_pov_model_cost_calculator.is_enabled('databricks'),
     materialized='view',
     alias='rpt_daily_sao_model_savings'
 ) }}
