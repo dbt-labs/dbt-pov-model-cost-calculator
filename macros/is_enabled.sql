@@ -11,12 +11,12 @@
 
 
 {% macro is_enabled(adapter_type) %}
-  
+
   {% set adapter_matches = (target.type == adapter_type) %}
-  
+
   {% if not adapter_matches %}
     {{ return(false) }}
   {% endif %}
-  
+
   {{ return(is_target_enabled()) }}
 {% endmacro %}

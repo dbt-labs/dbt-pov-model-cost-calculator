@@ -102,7 +102,7 @@
     queries.execution_time as query_execution_time,
     queries.queue_time as queue_time
 
-  from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
+  from {{ ref('model_tracking_table') }} as dbt
   inner join queries_with_metadata as queries
     on
       json_extract_path_text(queries.query_metadata, 'dbt_cloud_job_id') = dbt.dbt_cloud_job_id
@@ -184,7 +184,7 @@
 
     -- Estimate query cost: Duration * Cluster Cost Per Second
     (queries.duration_seconds * (({{ redshift_provisioned_node_price_per_hour }} * {{ redshift_provisioned_node_count }}) / 3600.0)) as estimated_cost_usd
-  from {{ adapter.quote(tracking_database) }}.{{ adapter.quote(tracking_schema) }}.{{ adapter.quote(tracking_table) }} as dbt
+  from {{ ref('model_tracking_table') }} as dbt
 
   inner join queries_in_period queries
   on
