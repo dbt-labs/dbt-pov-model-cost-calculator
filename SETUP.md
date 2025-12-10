@@ -16,18 +16,12 @@ The user or service principal needs:
 - `SELECT` permissions on `system.billing.usage` and `system.billing.list_prices` (for cost analysis)
 
 ## Installation
-The following are the required steps for this package to work:
-1. **Add the package to your `packages.yml` file**:
+Basic installation only requires the following:
+**Add the package to your `packages.yml` file**:
    ```yaml
    packages:
      - git: "https://github.com/dbt-labs/dbt-pov-model-cost-calculator.git"
        revision: main # or pin to a specific commit sha
-   ```
-
-2. **Add query comment macro in dbt_project.yml**:
-   ```yaml
-   # Add to your existing dbt_project.yml
-   query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
    ```
 
 ## Configuration
