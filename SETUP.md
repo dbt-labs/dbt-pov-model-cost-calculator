@@ -347,10 +347,11 @@ The following are the required steps to capture current state costs, SAO costs, 
 
 The below execution assumes you are directly updating your baseline jobs to utilize SAO, building the package assets to the same schema and database. Updated instructions coming soon for teams testing SAO separate from the environment running their baseline.
 
-1. **Add the query comment macro in your dbt_project.yml along with optional vars of your chosing**:
+1. **Optionally add the query comment macro in your dbt_project.yml along with vars of your chosing**:
+   NOTE: The query comment exists in the package code and will run as needed if you don't have a query comment already called out in your root dbt_project.yml. If you do already have a query comment called out in your root dbt_project.yml, you will need to add the package query comment to it.
    ```yaml
-   # Add to your existing dbt_project.yml
-   query-comment: "{{ dbt_pov_model_cost_calculator.query_comment(node) }}"
+   # Add the package query comment to your existing dbt_project.yml query comment
+   query-comment: "existing_comment - {{ dbt_pov_model_cost_calculator.query_comment(node) }}"
    
    vars:
     dbt_pov_model_cost_calculator:
