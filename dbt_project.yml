@@ -52,6 +52,7 @@ vars:
   # Table name for tracking model executions
   artifact_table: "dbt_model_executions"
   # Batch size for inserting model execution records (default: 500)
+  extra_artifact_tables: []
   batch_size: 500
   # Start date for query monitoring (default: 30 days ago)
   model_monitor_start_date: "{{ (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d') }}"
