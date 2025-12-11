@@ -69,7 +69,8 @@ dbt_execution_metadata as (
     job_runs.dbt_cloud_project_id,
     sum(case when dbt_models.status = 'reused' then 1 else 0 end) as reuse_count,
     sum(case when dbt_models.status in ('success','error') then 1 else 0 end) as execute_count,
-  from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt_models
+  from {{ ref('model_tracking_table') }} as dbt_models
+
   left join {{ ref('deduplicated_job_runs') }} as job_runs
     on job_runs.dbt_cloud_run_id = dbt_models.dbt_cloud_run_id
   group by 1, 2, 3, 4, 5, 6

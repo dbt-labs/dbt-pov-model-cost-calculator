@@ -76,7 +76,7 @@ select
   jobs.start_time as query_start_time,
   jobs.end_time as query_end_time,
 
-from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
+from {{ ref('model_tracking_table') }} as dbt
 
 inner join jobs_with_metadata as jobs
    on jobs.extracted_dbt_cloud_run_id = dbt.dbt_cloud_run_id

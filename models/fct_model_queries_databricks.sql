@@ -175,7 +175,7 @@ select
     else null
   end as cost_per_mb_written
 
-from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
+from {{ ref('model_tracking_table') }} as dbt
 left join query_with_compute qwc
   on qwc.query_metadata.dbt_cloud_run_id = dbt.dbt_cloud_run_id
   and qwc.query_metadata.node_id = ifnull(dbt.relation_name, qwc.query_metadata.node_id)
