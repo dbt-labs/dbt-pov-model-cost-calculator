@@ -61,7 +61,7 @@ select
   queries.total_elapsed_time,
   queries.execution_time as snowflake_execution_time
 
-from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt
+from {{ ref('model_tracking_table') }} as dbt
 inner join queries_with_metadata as queries
   on queries.query_metadata:dbt_cloud_job_id = dbt.dbt_cloud_job_id
   and queries.query_metadata:dbt_cloud_run_id = dbt.dbt_cloud_run_id

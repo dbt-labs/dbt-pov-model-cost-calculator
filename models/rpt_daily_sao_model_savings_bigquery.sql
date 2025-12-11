@@ -85,7 +85,7 @@ reused_models as (
     job_runs.dbt_cloud_project_id,
     count(1) as reuse_count,
     count(distinct dbt_models.dbt_cloud_run_id) as unique_runs_reused
-  from {{ dbt_pov_model_cost_calculator.get_tracking_table_fqn() }} as dbt_models
+  from {{ ref('model_tracking_table') }} as dbt_models
   left join {{ ref('deduplicated_job_runs') }} as job_runs
     on job_runs.dbt_cloud_run_id = dbt_models.dbt_cloud_run_id
   where dbt_models.status = 'reused'
