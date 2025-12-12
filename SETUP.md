@@ -343,7 +343,7 @@ The plugin includes a query comment macro that attaches JSON metadata to all SQL
 
 ## Execution
 
-The following are the required steps to capture current state costs, SAO costs, and then run the package to calcualte the resulting savings.
+The following are the required steps to capture current state costs, SAO costs, and then run the package to calculate the resulting savings.
 
 The below execution assumes you are directly updating your baseline jobs to utilize SAO, building the package assets to the same schema and database. Updated instructions coming soon for teams testing SAO separate from the environment running their baseline.
 
