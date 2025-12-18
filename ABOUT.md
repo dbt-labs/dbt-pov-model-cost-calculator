@@ -84,6 +84,10 @@ The `rpt_daily_sao_model_savings` model provides comprehensive analysis of cost 
 - `reuse_rate_percent`: Percentage of runs where the model was reused vs. executed
 - `avg_cost_saved_per_reuse_usd`: Average cost savings per reuse event
 
+### Aggregate Table (Summary Analysis)
+
+- **`agg_savings_summary`**: Summarizes cost savings from state-aware orchestration by tracking model reuse patterns. This model calculates total model reuse and cost savings metrics across your designated summary timeframe.
+
 ## How It Works
 
 This package is designed to collect the data necessary for dbt Fusion engine's cost savings analysis:
