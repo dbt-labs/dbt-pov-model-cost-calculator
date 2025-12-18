@@ -109,6 +109,10 @@ select
   dbt_execution_metadata.reuse_count * model_queries.avg_run_credits as estimated_credits_saved,
   dbt_execution_metadata.reuse_count * model_queries.avg_run_cost as estimated_cost_saved_usd,
 
+   -- Calculated cost metrics
+  dbt_execution_metadata.execute_count * model_queries.avg_run_credits as estimated_credits_used,
+  dbt_execution_metadata.execute_count * model_queries.avg_run_cost as estimated_cost_spent_usd,
+
   -- Additional savings insights
    case
     when dbt_execution_metadata.execute_count > 0
