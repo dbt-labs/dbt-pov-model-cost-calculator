@@ -10,7 +10,7 @@
 -- dbt run --select +agg_sao_savings_summary_snowflake --vars '{"summary_start_date": "2025-12-04", "summary_end_date": "2025-12-11"}'
 
 {% set summary_start_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=8)).strftime('%Y-%m-%d')) %}
-{% set summary_end_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=1)).strftime('%Y-%m-%d')) %}
+{% set summary_end_date = var('summary_end_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=1)).strftime('%Y-%m-%d')) %}
 
 select
 --dates
