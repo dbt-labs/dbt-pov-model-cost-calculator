@@ -86,7 +86,7 @@ The `rpt_daily_sao_model_savings` model provides comprehensive analysis of cost 
 
 ### Aggregate Table (Summary Analysis)
 
-- **`agg_savings_summary`**: Summarizes cost savings from state-aware orchestration by tracking model reuse patterns. This model calculates total model reuse and cost savings metrics across your designated summary timeframe.
+- **`agg_sao_savings_summary`**: Summarizes cost savings from state-aware orchestration by tracking model reuse patterns. This model calculates total model reuse and cost savings metrics across your designated summary timeframe.
 
 **Key Metrics Provided:**
 - `perc_reused_models`: Percentage of models reused accross summary period

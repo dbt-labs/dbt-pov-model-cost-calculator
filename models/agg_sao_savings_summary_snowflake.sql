@@ -1,13 +1,13 @@
 {{ config(
-    enabled=dbt_pov_model_cost_calculator.is_enabled('bigquery'),
+    enabled=dbt_pov_model_cost_calculator.is_enabled('snowflake'),
     materialized='view',
-    alias='agg_sao_model_savings'
+    alias='agg_sao_savings_summary'
 ) }}
 
--- Savings summary for BigQuery dbt models that were reused
--- This model creates an aggregate, single row summary of the cost savings from fct_model_queries_bigquery
+-- Savings summary for Snowflake dbt models that were reused
+-- This model creates an aggregate, single row summary of the cost savings from fct_model_queries_snowflake
 -- Run for specific date range with below command, otherwise default will run for the last full 7 days
--- dbt run --select +agg_savings_summary_bigquery --vars '{"summary_start_date": "2025-12-04", "summary_end_date": "2025-12-11"}'
+-- dbt run --select +agg_sao_savings_summary_snowflake --vars '{"summary_start_date": "2025-12-04", "summary_end_date": "2025-12-11"}'
 
 {% set summary_start_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=8)).strftime('%Y-%m-%d')) %}
 {% set summary_start_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=1)).strftime('%Y-%m-%d')) %}
