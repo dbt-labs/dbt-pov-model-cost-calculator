@@ -17,13 +17,13 @@ select
 MIN(reuse_date) as summary_start_date,
 MAX(reuse_date) as summary_end_date,
  --model counts
-SUM(reuse_count) as weekly_reused_models,
-SUM(execute_count) as weekly_executed_models,
-SUM(reuse_count + execute_count) as weekly_attempted_models,
-ROUND((SUM(reuse_count) / SUM(reuse_count + execute_count)) * 100, 2) as weekly_perc_reused_models,
+SUM(reuse_count) as total_reused_models,
+SUM(execute_count) as total_executed_models,
+SUM(reuse_count + execute_count) as total_attempted_models,
+ROUND((SUM(reuse_count) / SUM(reuse_count + execute_count)) * 100, 2) as perc_reused_models,
  --model costs
-ROUND(SUM(estimated_cost_saved_usd), 2) as weekly_reused_cost_savings,
-ROUND(SUM(estimated_cost_spent_usd), 2) as weekly_cost_spent,
-ROUND((SUM(estimated_cost_saved_usd) / SUM(estimated_cost_saved_usd + estimated_cost_spent_usd)) * 100, 2) as weekly_perc_cost_savings
+ROUND(SUM(estimated_cost_saved_usd), 2) as total_reused_cost_savings,
+ROUND(SUM(estimated_cost_spent_usd), 2) as total_cost_spent,
+ROUND((SUM(estimated_cost_saved_usd) / SUM(estimated_cost_saved_usd + estimated_cost_spent_usd)) * 100, 2) as perc_cost_savings
 from {{ ref('rpt_daily_sao_model_savings_snowflake') }}
 where reuse_date between {{ var('summary_start_date') }} and {{ var('summary_end_date') }}
