@@ -25,5 +25,5 @@ ROUND((SUM(reuse_count) / SUM(reuse_count + execute_count)) * 100, 2) as perc_re
 ROUND(SUM(estimated_cost_saved_usd), 2) as total_reused_cost_savings,
 ROUND(SUM(estimated_cost_spent_usd), 2) as total_cost_spent,
 ROUND((SUM(estimated_cost_saved_usd) / SUM(estimated_cost_saved_usd + estimated_cost_spent_usd)) * 100, 2) as perc_cost_savings
-from {{ ref('rpt_daily_sao_model_savings_snowflake') }}
+from {{ ref('rpt_daily_sao_model_savings_databricks') }}
 where reuse_date between {{ var('summary_start_date') }} and {{ var('summary_end_date') }}

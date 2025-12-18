@@ -10,7 +10,7 @@
 -- dbt run --select +agg_sao_savings_summary_snowflake --vars '{"summary_start_date": "2025-12-04", "summary_end_date": "2025-12-11"}'
 
 {% set summary_start_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=8)).strftime('%Y-%m-%d')) %}
-{% set summary_start_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=1)).strftime('%Y-%m-%d')) %}
+{% set summary_end_date = var('summary_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=1)).strftime('%Y-%m-%d')) %}
 
 select
 --dates
@@ -26,4 +26,4 @@ ROUND(SUM(estimated_cost_saved_usd), 2) as total_reused_cost_savings,
 ROUND(SUM(estimated_cost_spent_usd), 2) as total_cost_spent,
 ROUND((SUM(estimated_cost_saved_usd) / SUM(estimated_cost_saved_usd + estimated_cost_spent_usd)) * 100, 2) as perc_cost_savings
 from {{ ref('rpt_daily_sao_model_savings_snowflake') }}
-where reuse_date between {{ var('summary_start_date') }} and {{ var('summary_end_date') }}
+where reuse_date between '{{ summary_start_date }}' and '{{ summary_end_date }}'
