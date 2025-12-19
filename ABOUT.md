@@ -86,6 +86,8 @@ The `rpt_daily_sao_model_savings` model provides comprehensive analysis of cost 
 
 ### Aggregate Table (Summary Analysis)
 
+Note: This summary table is currently only available for Snowflake. Support for Databricks and BigQuery coming soon.
+
 - **`agg_sao_savings_summary`**: Summarizes cost savings from state-aware orchestration by tracking model reuse patterns. This model calculates total model reuse and cost savings metrics across your designated summary timeframe.
 
 **Key Metrics Provided:**
