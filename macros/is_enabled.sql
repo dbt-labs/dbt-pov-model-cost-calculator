@@ -6,7 +6,14 @@
 
 {% macro is_target_enabled() %}
   {% set is_enabled = var('enable_cost_savings_calculator', true) %}
-  {{ return(is_enabled | as_bool) }}
+  {% if is_enabled is string %}
+    {% if is_enabled.lower() == 'true' %}
+      {% set is_enabled = true %}
+    {% elif is_enabled.lower() == 'false' %}
+      {% set is_enabled = false %}
+    {% endif %}
+  {% endif %}
+  {{ return(is_enabled) }}
 {% endmacro %}
 
 
