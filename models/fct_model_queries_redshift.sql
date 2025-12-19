@@ -122,7 +122,7 @@
   order by
     estimated_cost_usd DESC,
     elapsed_time DESC
-{% else %}
+{% elif dbt_pov_model_cost_calculator.is_enabled('redshift') %}
   {{ log("Using provisioned Redshift model", info=True) }}
 
   with queries_in_period as (
