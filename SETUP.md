@@ -345,7 +345,7 @@ The plugin includes a query comment macro that attaches JSON metadata to all SQL
 
 The following are the required steps to capture current state costs, SAO costs, and then run the package to calculate the resulting savings.
 
-The below execution assumes you are directly updating your baseline jobs to utilize SAO, building the package assets to the same schema and database. Updated instructions coming soon for teams testing SAO separate from the environment running their baseline.
+The below execution assumes you are directly updating your baseline jobs to utilize SAO, building the package assets to the same schema and database.
 
 The Baseline Window mentioned below may vary based on your orchestration schedule. If you have mostly daily jobs or very impactful weekly jobs, a week of tracking may be best. If you have mostly hourly jobs, a few days of tracking may be sufficient. Whatever you choose, just be sure you are comofrtable extrapolating out your tracking window savings to estimate across a year.
 
@@ -371,8 +371,14 @@ The Baseline Window mentioned below may vary based on your orchestration schedul
    Make sure to confirm you see records being stored in your dbt_model_executions table (or whatever custom artifact_table name you set). Once you have records in this table, try running the fct_model_queries_warehouse model to confirm the package is connecting to warehouse metadata as expected.
 3. **Turn on SAO for a Comparison Window with SAO jobs**
 4. **After you've collected baseline and SAO runs, execute the following:**\
-   The below summary date variables give you flexibility to calculate your aggregate savings summary across a defined timeframe. If no variables are passed in, the agg_sao_savings_summary_warehouse model will calculate over the last full 7 days.
+   **Snowflake Users:**\
+   Use the below command to create your agg_sao_savings_summary model. The summary date variables give you flexibility to calculate your aggregate savings summary across a defined timeframe. If no variables are passed in, the agg_sao_savings_summary_warehouse model will calculate over the last full 7 days.
     ```bash
     dbt run --select package:dbt_pov_model_cost_calculator --vars '{"summary_start_date": "2025-12-04", "summary_end_date": "2025-12-11"}'
+    ```
+   **Databricks & BigQuery Users:**\
+   Use the below command to create your rpt_daily_sao_model_savings model.
+    ```bash
+    dbt run --select package:dbt_pov_model_cost_calculator
     ```
 5. **Reference the [ABOUT.md](https://github.com/dbt-labs/dbt-pov-model-cost-calculator/blob/main/ABOUT.md) to interpret the results**
