@@ -1,17 +1,41 @@
+{% macro _serialize_value(value) %}
+  {#- Recursively serialize a value, converting datetime objects to ISO strings -#}
+  {% if value is none %}
+    {{ return(none) }}
+  {% elif value is mapping %}
+    {% set result = {} %}
+    {% for k, v in value.items() %}
+      {% do result.update({k: dbt_pov_model_cost_calculator._serialize_value(v)}) %}
+    {% endfor %}
+    {{ return(result) }}
+  {% elif value is iterable and value is not string %}
+    {% set result = [] %}
+    {% for item in value %}
+      {% do result.append(dbt_pov_model_cost_calculator._serialize_value(item)) %}
+    {% endfor %}
+    {{ return(result) }}
+  {% elif value.isoformat is defined and value.strftime is defined %}
+    {#- Duck-typing check for datetime/date objects -#}
+    {{ return(value.isoformat()) }}
+  {% else %}
+    {{ return(value) }}
+  {% endif %}
+{% endmacro %}
+
 {% macro _extract_node_config(node) %}
   {% if node.config is mapping %}
       {% set node_config = tojson({
         "unique_id": node.unique_id,
-        "group": node.config.group,
-        "tags": node.config.tags,
-        'persist_docs': node.config.persist_docs,
-        'description': node.config.description,
-        'meta': node.config.meta
+        "group": dbt_pov_model_cost_calculator._serialize_value(node.config.group),
+        "tags": dbt_pov_model_cost_calculator._serialize_value(node.config.tags),
+        "persist_docs": dbt_pov_model_cost_calculator._serialize_value(node.config.persist_docs),
+        "description": dbt_pov_model_cost_calculator._serialize_value(node.config.description),
+        "meta": dbt_pov_model_cost_calculator._serialize_value(node.config.meta)
       })  %}
   {% elif node.config.to_dict is defined %}
-    {% set node_config = node.config.to_dict() | tojson %}
+    {% set node_config = dbt_pov_model_cost_calculator._serialize_value(node.config.to_dict()) | tojson %}
   {% else %}
-    {% set node_config = 'non-serializable node config recieved' %}
+    {% set node_config = '"non-serializable node config received"' %}
   {% endif %}
   {{ return(node_config) }}
 {% endmacro %}
