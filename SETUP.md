@@ -349,7 +349,7 @@ The below execution assumes you are directly updating your baseline jobs to util
 
 The Baseline Window mentioned below may vary based on your orchestration schedule. If you have mostly daily jobs or very impactful weekly jobs, a week of tracking may be best. If you have mostly hourly jobs, a few days of tracking may be sufficient. Whatever you choose, just be sure you are comofrtable extrapolating out your tracking window savings to estimate across a year.
 
-1. **Add the query comment macro in your dbt_project.yml along with vars of your chosing**\
+1. **Add the query comment macro in your dbt_project.yml along with optional vars of your chosing**\
    NOTE: You must add the below query comment into your dbt_project.yml in order for the package to successfully connect to warehouse metadata. If you already have a query comment called out in your root dbt_project.yml, you will need to append the package query-comment to it. For example:
    ```yaml
    # Add the package query comment to your existing dbt_project.yml fresh (without the existing_comment and dash) or appended to your existing query comment like below
