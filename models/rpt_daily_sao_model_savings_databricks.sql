@@ -54,7 +54,7 @@ with model_queries as (
   group by 1, 2, 3
 ),
 
-reused_models as (
+dbt_execution_metadata as (
   select
     dbt_models.model_name,
     dbt_models.relation_name,
@@ -62,26 +62,25 @@ reused_models as (
     date(dbt_models.run_started_at) as reuse_date,
     job_runs.dbt_cloud_environment_id,
     job_runs.dbt_cloud_project_id,
-    count(1) as reuse_count,
-    count(distinct dbt_models.dbt_cloud_run_id) as unique_runs_reused
+    sum(case when dbt_models.status = 'reused' then 1 else 0 end) as reuse_count,
+    sum(case when dbt_models.status in ('success','error') then 1 else 0 end) as execute_count,
   from {{ ref('model_tracking_table') }} as dbt_models
   left join {{ ref('deduplicated_job_runs') }} as job_runs
     on job_runs.dbt_cloud_run_id = dbt_models.dbt_cloud_run_id
-  where dbt_models.status = 'reused'
   group by 1, 2, 3, 4, 5, 6
 )
 
 select
-  reused_models.model_name,
-  reused_models.relation_name,
-  reused_models.model_package,
-  reused_models.reuse_date,
-  reused_models.dbt_cloud_environment_id,
-  reused_models.dbt_cloud_project_id,
+  dbt_execution_metadata.model_name,
+  dbt_execution_metadata.relation_name,
+  dbt_execution_metadata.model_package,
+  dbt_execution_metadata.reuse_date,
+  dbt_execution_metadata.dbt_cloud_environment_id,
+  dbt_execution_metadata.dbt_cloud_project_id,
 
   -- Reuse metrics
-  reused_models.reuse_count,
-  reused_models.unique_runs_reused,
+  dbt_execution_metadata.reuse_count,
+  dbt_execution_metadata.execute_count,
 
   -- Historical cost metrics (what it would have cost if not reused)
   model_queries.avg_run_dbus,
@@ -101,26 +100,30 @@ select
   model_queries.max_gb_read,
 
   -- Calculated savings metrics
-  reused_models.reuse_count * model_queries.avg_run_dbus as estimated_dbus_saved,
-  reused_models.reuse_count * model_queries.avg_run_cost as estimated_cost_saved_usd,
+  dbt_execution_metadata.reuse_count * model_queries.avg_run_dbus as estimated_dbus_saved,
+  dbt_execution_metadata.reuse_count * model_queries.avg_run_cost as estimated_cost_saved_usd,
 
+     -- Calculated cost metrics
+  dbt_execution_metadata.execute_count * model_queries.avg_run_dbus as estimated_dbus_used,
+  dbt_execution_metadata.execute_count * model_queries.avg_run_cost as estimated_cost_spent_usd,
+  
   -- Additional savings insights
   case
-    when model_queries.total_run_count > 0
-    then round(reused_models.reuse_count * 100.0 / (reused_models.reuse_count + model_queries.total_run_count), 2)
+    when dbt_execution_metadata.execute_count > 0
+    then round(dbt_execution_metadata.reuse_count * 100.0 / (dbt_execution_metadata.reuse_count + dbt_execution_metadata.execute_count), 2)
     else 100.0
   end as reuse_rate_percent,
 
   -- Cost efficiency metrics
   case
-    when reused_models.reuse_count > 0
-    then round(model_queries.avg_run_cost / reused_models.reuse_count, 4)
+    when dbt_execution_metadata.reuse_count > 0
+    then round(model_queries.avg_run_cost / dbt_execution_metadata.reuse_count, 4)
     else 0
   end as avg_cost_saved_per_reuse_usd
 
-from reused_models
+from dbt_execution_metadata
 
 left join model_queries
-  on model_queries.model_name = reused_models.model_name
- and model_queries.model_package = reused_models.model_package
- and model_queries.relation_name = reused_models.relation_name
+  on model_queries.model_name = dbt_execution_metadata.model_name
+ and model_queries.model_package = dbt_execution_metadata.model_package
+ and model_queries.relation_name = dbt_execution_metadata.relation_name
