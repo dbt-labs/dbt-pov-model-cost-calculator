@@ -371,12 +371,12 @@ The Baseline Window mentioned below may vary based on your orchestration schedul
    Make sure to confirm you see records being stored in your dbt_model_executions table (or whatever custom artifact_table name you set). Once you have records in this table, try running the fct_model_queries_warehouse model to confirm the package is connecting to warehouse metadata as expected.
 3. **Turn on SAO for a Comparison Window with SAO jobs**
 4. **After you've collected baseline and SAO runs, execute the following:**\
-   **Snowflake Users:**\
+   **Snowflake and Databricks Users:**\
    Use the below command to create your agg_sao_savings_summary model. The summary date variables give you flexibility to calculate your aggregate savings summary across a defined timeframe. If no variables are passed in, the agg_sao_savings_summary_warehouse model will calculate over the last full 7 days.
     ```bash
     dbt run --select package:dbt_pov_model_cost_calculator --vars '{"summary_start_date": "2025-12-04", "summary_end_date": "2025-12-11"}'
     ```
-   **Databricks & BigQuery Users:**\
+   **BigQuery Users:**\
    Use the below command to create your rpt_daily_sao_model_savings model.
     ```bash
     dbt run --select package:dbt_pov_model_cost_calculator
