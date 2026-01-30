@@ -8,14 +8,14 @@
 {% set tracking_schema = var('artifact_schema', target.schema) %}
 {% set tracking_database = target.database %}
 {% set monitor_start_date = var('model_monitor_start_date', (modules.datetime.datetime.now() - modules.datetime.timedelta(days=30)).strftime('%Y-%m-%d')) %}
-{% set redshift_provisioned_query_history_table = var('redshift_provisioned_query_history_table', 'SYS_QUERY_HISTORY') %}
+{% set redshift_provisioned_query_history_table = var('redshift_provisioned_query_history_table', 'pg_catalog.SYS_QUERY_HISTORY') %}
 
 {% set redshift_provisioned_node_price_per_hour = var('redshift_provisioned_node_price_per_hour', 0.543) %} -- Default value is for RA3.large
 {% set redshift_provisioned_node_count = var('redshift_provisioned_node_count', 1) %}
 
 {% set is_serverless_redshift = var('is_serverless_redshift', false) | as_bool %}
-{% set redshift_serverless_query_history_table = var('redshift_serverless_query_history_table', 'SYS_QUERY_HISTORY') %}
-{% set redshift_serverless_usage_table = var('redshift_serverless_usage_table', 'SYS_SERVERLESS_USAGE') %}
+{% set redshift_serverless_query_history_table = var('redshift_serverless_query_history_table', 'pg_catalog.SYS_QUERY_HISTORY') %}
+{% set redshift_serverless_usage_table = var('redshift_serverless_usage_table', 'pg_catalog.SYS_SERVERLESS_USAGE') %}
 
 -- Redshift Serverless is billed based on RPU hours consumed. RPU's are
 -- based off of all the concurrently running queries on a per minute basis.

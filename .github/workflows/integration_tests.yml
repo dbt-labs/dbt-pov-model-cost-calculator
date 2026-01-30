@@ -78,10 +78,10 @@ jobs:
       DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD: ${{ secrets.DBT_ENV_SECRET_REDSHIFT_PROVISIONED_PASSWORD }}
 
       # Redshift Serverless Environment Variables
-      REDSHIFT_SERVERLESS_HOST: ${{ secrets.REDSHIFT_SERVERLESS_HOST }}
-      REDSHIFT_SERVERLESS_DBNAME: ${{ secrets.REDSHIFT_SERVERLESS_DBNAME }}
+      REDSHIFT_SERVERLESS_HOST: ${{ vars.REDSHIFT_SERVERLESS_HOST }}
+      REDSHIFT_SERVERLESS_DBNAME: ${{ vars.REDSHIFT_SERVERLESS_DBNAME }}
       REDSHIFT_SERVERLESS_SCHEMA: ${{ secrets.REDSHIFT_SERVERLESS_SCHEMA }}
-      REDSHIFT_SERVERLESS_USER: ${{ secrets.REDSHIFT_SERVERLESS_USER }}
+      REDSHIFT_SERVERLESS_USER: ${{ vars.REDSHIFT_SERVERLESS_USER }}
       DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD: ${{ secrets.DBT_ENV_SECRET_REDSHIFT_SERVERLESS_PASSWORD }}
 
       # test environment variables
@@ -124,6 +124,7 @@ jobs:
 
       - name: Debug Connection
         run: |
+          echo "Redshift Serverless Host: $(echo ${{env.REDSHIFT_SERVERLESS_HOST}} | base64)"
           ${{ matrix.dbt-command }} debug --target ${TARGET} --profiles-dir integration_tests --project-dir integration_tests/test_project ${EXTRA_DBT_ARGS}
 
       - name: Run dbt Compile
