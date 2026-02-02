@@ -17,4 +17,5 @@ select
     'is_target_enabled_default_not_true' as test_case,
     '{{ default_result }}' as actual_value,
     'true' as expected_value
+from (select 1) as dummy
 where not ({{ default_result }} = true)

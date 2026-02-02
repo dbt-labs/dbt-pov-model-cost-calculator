@@ -8,4 +8,5 @@
 {% set result = dbt_pov_model_cost_calculator.is_target_enabled() %}
 
 select 1 as failure_indicator
+from (select 1) as dummy
 where {{ result }} != true
