@@ -15,7 +15,7 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 models:
-  +dbt_pov_model_cost_calculator:
+  dbt_pov_model_cost_calculator:
     +enabled: "{{ env_var('DBT_ENABLE_MBR_MODELS', true) | as_bool }}"
 
 target-path: "target" # directory which will store compiled SQL files
